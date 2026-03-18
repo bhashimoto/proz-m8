@@ -12,3 +12,6 @@ dependencies = [
 	"openpyxl",
 	"requests",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/m8"]
