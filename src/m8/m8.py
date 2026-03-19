@@ -226,7 +226,7 @@ class M8:
                                                    search_params=search_params)
 
     @auth
-    def create_purchase_order(self, po_data: PurchaseOrder, full: bool = False):
+    def create_purchase_order(self, po_data: PurchaseOrder, full: bool = False) -> int:
         url = self._base_url + "/" + \
             M8.endpoints["purchase_orders"]["endpoint"]
 
@@ -246,6 +246,8 @@ class M8:
                 self.create_purchase_order_item(po_id, item)
             for installment in po_data.installments:
                 self.create_purchase_order_installment(po_id, installment)
+
+        return po_id
 
     @auth
     def create_purchase_order_item(self, po_id: int, item: PurchaseOrderItem):
