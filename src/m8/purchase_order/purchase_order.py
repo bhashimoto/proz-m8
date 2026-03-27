@@ -13,13 +13,13 @@ class PurchaseOrderItem:
 
     def to_dict(self) -> dict:
         return {
-            "produtoId": self.produtoId,
-            "unidadeId": self.unidadeId,
-            "quantidade": self.quantidade,
-            "quantidadeComprada": self.quantidadeComprada,
-            "valorUnitario": self.valorUnitario,
-            "centroCustoId": self.centroCustoId,
-            "operacaoFiscalId": self.operacaoFiscalId,
+            "produtoId": int(self.produtoId),
+            "unidadeId": int(self.unidadeId),
+            "quantidade": float(self.quantidade),
+            "quantidadeComprada": float(self.quantidadeComprada),
+            "valorUnitario": float(self.valorUnitario),
+            "centroCustoId": int(self.centroCustoId),
+            "operacaoFiscalId": int(self.operacaoFiscalId),
         }
 
 
@@ -48,6 +48,7 @@ class PurchaseOrder:
     items: list[PurchaseOrderItem]
     installments: list[PurchaseOrderInstallment]
     tipoOrdemCompraId: int
+    tipoOC: str
 
     def to_dict(self, full: bool = False) -> dict:
         ret = {
@@ -60,6 +61,7 @@ class PurchaseOrder:
             "condicaoPagamentoId": self.condicaoPagamentoId,
             "observacao": self.observacao,
             "tipoOrdemCompraId": self.tipoOrdemCompraId,
+            "tipoOC": self.tipoOC,
         }
 
         if full:
