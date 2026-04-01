@@ -250,7 +250,7 @@ class M8:
         return po_id
 
     @auth
-    def create_purchase_order_item(self, po_id: int, item: PurchaseOrderItem):
+    def create_purchase_order_item(self, po_id: int, item: PurchaseOrderItem) -> int:
         url = "/".join([self._base_url,
                         M8.endpoints["purchase_orders"]["endpoint"],
                         str(po_id),
@@ -264,6 +264,8 @@ class M8:
             logger.error(f"Error in create_purchase_order(). Status code: {
                          resp.status_code}")
             raise BadRequestException(resp.json()["errors"][0]["message"])
+
+        return resp.json()["data"]["id"]
 
     @auth
     def create_purchase_order_installment(self, po_id: int, installment: PurchaseOrderInstallment):
