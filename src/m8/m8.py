@@ -192,6 +192,12 @@ class M8:
         return self._request_get_with_query_params(url=url,
                                                    search_params=search_params)
 
+    def get_unsent_invoices(self) -> list:
+        search_params = {
+            "Status": "Pendente"
+        }
+        return self.get_invoices(search_params=search_params)
+
     @auth
     def update_invoice(self, invoice_id: int) -> None:
         url = "/".join([self._base_url,
@@ -206,6 +212,11 @@ class M8:
             print(resp.status_code)
             print(resp.content)
             raise BadRequestException(resp.json()["errors"][0]["message"])
+
+    @auth
+    def send_invoice_with_custom_date(self, invoice_id: int, date: str) -> None:
+        self.update_invoice(invoice_id=invoice_id, context={"emissao": date})
+        self.send_invoice(invoice_id=invoice_id)
 
     @auth
     def get_purchase_orders(self, search_params: dict) -> list:
