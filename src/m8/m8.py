@@ -199,18 +199,14 @@ class M8:
         return self.get_invoices(search_params=search_params)
 
     @auth
-    def update_invoice(self, invoice_id: int) -> None:
+    def update_invoice(self, invoice_id: int, context: dict = {}) -> None:
         url = "/".join([self._base_url,
                        M8.endpoints["invoices"]["endpoint"],
-                       str(invoice_id),
-                       M8.endpoints["invoices"]["methods"]["send"]])
+                       str(invoice_id)])
 
-        resp = requests.patch(url=url, headers=self._headers, json={
-                              "documento": None})
+        resp = requests.patch(url=url, headers=self._headers, json=context)
 
         if resp.status_code > 299:
-            print(resp.status_code)
-            print(resp.content)
             raise BadRequestException(resp.json()["errors"][0]["message"])
 
     @auth
