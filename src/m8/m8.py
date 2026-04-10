@@ -64,15 +64,19 @@ class M8:
 
     def __init__(self):
         self._base_url: str = "https://api.integra.m8sistemas.com.br"
-        self._auth_token_expiration_dt = dt.datetime.now() + \
-            dt.timedelta(days=-1)
+        self._auth_token_expiration_dt = dt.datetime.now() - dt.timedelta(days=1)
         self._auth_token = ""
         self._headers = {
             "Authorization": "Bearer " + self._auth_token,
             "Content-Type": "application/json; charset=utf-8",
         }
-        print("inicializando m8 em ", dt.datetime.now())
+        self._username: str | None = None
+        self._password: str | None = None
+        self._tenant: str | None = None
+        self._company: int | None = None
+        logger.info("inicializando m8 em %s", dt.datetime.now())
 
+    @staticmethod
     def auth(func):
         """
         Calls the wrapped method. If the response is
@@ -81,7 +85,7 @@ class M8:
         """
         @wraps(func)
         def wrapper(self, *args, **kwargs):
-            if self._auth_token_expiration_dt + dt.timedelta(minutes=-1) < dt.datetime.now():
+            if self._auth_token_expiration_dt - dt.timedelta(minutes=1) < dt.datetime.now():
                 tries = 1
                 max_tries = 3
                 while tries < max_tries:
@@ -110,8 +114,7 @@ class M8:
         resp = requests.get(url=url, headers=self._headers)
 
         if resp.status_code > 299:
-            logger.error(resp.json()["errors"][0]["message"])
-            return []
+            raise BadRequestException(resp.json()["errors"][0]["message"])
 
         return resp.json()["data"]
 
@@ -123,7 +126,7 @@ class M8:
         self._company = company_id
 
     def authenticate(self):
-        print("renovando token", end="")
+        logger.info("renovando token")
         data = {
             "tenant": self._tenant,
             "username": self._username,
@@ -131,14 +134,13 @@ class M8:
             "company": self._company,
         }
 
-        logger.info(f"logging into tenant {self._tenant}, company {
-                    self._company} with user {self._username}")
+        logger.info("logging into tenant %s, company %s with user %s", self._tenant, self._company, self._username)
 
         url = self._base_url + "/" + M8.endpoints["auth"]["endpoint"]
         resp = requests.post(url, json=data)
 
         if resp.status_code == 200:
-            print(" -- autenticado")
+            logger.info("autenticado")
             resp_json = resp.json()
             min_exp = int(resp_json["data"]["minutesExpire"])
             exp_dt = dt.datetime.now() + dt.timedelta(minutes=min_exp)
@@ -157,7 +159,7 @@ class M8:
             self.authenticate()
 
     @auth
-    def cancel_invoice(self, invoice_id: int, reason: str) -> str | None:
+    def cancel_invoice(self, invoice_id: int, reason: str) -> None:
         url = "/".join([self._base_url,
                         M8.endpoints["invoices"]["endpoint"],
                         str(invoice_id),
@@ -186,6 +188,7 @@ class M8:
         if resp.status_code > 299:
             raise BadRequestException(resp.json()["errors"][0]["message"])
 
+    @auth
     def get_invoices(self, search_params: dict) -> list:
         url = self._base_url + "/" + M8.endpoints["invoices"]["endpoint"]
 
@@ -199,15 +202,29 @@ class M8:
         return self.get_invoices(search_params=search_params)
 
     @auth
-    def update_invoice(self, invoice_id: int, context: dict = {}) -> None:
+    def update_invoice(self, invoice_id: int, context: dict | None = None) -> None:
+        if context is None:
+            context = {}
         url = "/".join([self._base_url,
                        M8.endpoints["invoices"]["endpoint"],
                        str(invoice_id)])
 
-        resp = requests.patch(url=url, headers=self._headers, json=context)
+        resp = self.patch_with_retries(max_retries=2,
+                                       url=url, headers=self._headers, json=context)
 
         if resp.status_code > 299:
             raise BadRequestException(resp.json()["errors"][0]["message"])
+
+    def patch_with_retries(self, max_retries: int, **kwargs):
+        retries = 0
+        while retries < max_retries:
+            try:
+                resp = requests.patch(**kwargs)
+                return resp
+            except ConnectionError:
+                retries += 1
+                time.sleep(1.0)
+        raise ConnectionError(f"patch failed after {max_retries} retries")
 
     @auth
     def send_invoice_with_custom_date(self, invoice_id: int, date: str) -> None:
@@ -242,8 +259,7 @@ class M8:
         resp = requests.post(url, json=po_dict, headers=self._headers)
 
         if resp.status_code > 299:
-            logger.error(f"Error in create_purchase_order(). Status code: {
-                         resp.status_code}")
+            logger.error("Error in create_purchase_order(). Status code: %s", resp.status_code)
             raise BadRequestException(resp.json()["errors"][0]["message"])
 
         po_id = resp.json()["data"]["id"]
@@ -268,14 +284,13 @@ class M8:
         resp = requests.post(url, json=item.to_dict(), headers=self._headers)
 
         if resp.status_code > 299:
-            logger.error(f"Error in create_purchase_order(). Status code: {
-                         resp.status_code}")
+            logger.error("Error in create_purchase_order(). Status code: %s", resp.status_code)
             raise BadRequestException(resp.json()["errors"][0]["message"])
 
         return resp.json()["data"]["id"]
 
     @auth
-    def create_purchase_order_installment(self, po_id: int, installment: PurchaseOrderInstallment):
+    def create_purchase_order_installment(self, po_id: int, installment: PurchaseOrderInstallment) -> int:
         url = "/".join([self._base_url,
                         M8.endpoints["purchase_orders"]["endpoint"],
                         str(po_id),
@@ -286,10 +301,12 @@ class M8:
             url, json=installment.to_dict(), headers=self._headers)
 
         if resp.status_code > 299:
-            logger.error(f"Error in create_purchase_order(). Status code: {
-                         resp.status_code}")
+            logger.error("Error in create_purchase_order(). Status code: %s", resp.status_code)
             raise BadRequestException(resp.json()["errors"][0]["message"])
 
+        return resp.json()["data"]["id"]
+
+    @auth
     def get_receivables(self, search_params: dict) -> list:
         url = self._base_url + "/" + M8.endpoints["receivables"]["endpoint"]
         data = self._request_get_with_query_params(

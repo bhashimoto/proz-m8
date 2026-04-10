@@ -13,13 +13,13 @@ class PurchaseOrderItem:
 
     def to_dict(self) -> dict:
         return {
-            "produtoId": int(self.produtoId),
-            "unidadeId": int(self.unidadeId),
-            "quantidade": float(self.quantidade),
-            "quantidadeComprada": float(self.quantidadeComprada),
-            "valorUnitario": float(self.valorUnitario),
-            "centroCustoId": int(self.centroCustoId),
-            "operacaoFiscalId": int(self.operacaoFiscalId),
+            "produtoId": self.produtoId,
+            "unidadeId": self.unidadeId,
+            "quantidade": self.quantidade,
+            "quantidadeComprada": self.quantidadeComprada,
+            "valorUnitario": self.valorUnitario,
+            "centroCustoId": self.centroCustoId,
+            "operacaoFiscalId": self.operacaoFiscalId,
         }
 
 
