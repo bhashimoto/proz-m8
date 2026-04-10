@@ -13,5 +13,8 @@ dependencies = [
 	"requests",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest", "pytest-mock"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/m8"]
