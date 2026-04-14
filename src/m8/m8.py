@@ -40,11 +40,10 @@ class M8:
         "purchase_orders": {
             "endpoint": "v1/compras/ordemcompra",
             "methods": {
-                "listar": "",
-                "cadastrar": "",
                 "listar_itens": "item",
                 "cadastrar_item": "item",
                 "cadastrar_parcela": "parcela",
+                "cancelar": "cancelar",
             }
         },
         "receivables": {
@@ -250,6 +249,16 @@ class M8:
                                                    search_params=search_params)
 
     @auth
+    def get_purchase_order(self, po_id: int) -> dict:
+        url = "/".join([self._base_url,
+                        M8.endpoints["purchase_orders"]["endpoint"],
+                        str(po_id)])
+        resp = requests.get(url, headers=self._headers)
+        if resp.status_code > 299:
+            raise BadRequestException(resp.json()["errors"][0]["message"])
+        return resp.json()["data"]
+
+    @auth
     def create_purchase_order(self, po_data: PurchaseOrder, full: bool = False) -> int:
         url = self._base_url + "/" + \
             M8.endpoints["purchase_orders"]["endpoint"]
@@ -273,6 +282,27 @@ class M8:
         return po_id
 
     @auth
+    def update_purchase_order(self, po_id: int, po_data: PurchaseOrder) -> None:
+        url = "/".join([self._base_url,
+                        M8.endpoints["purchase_orders"]["endpoint"],
+                        str(po_id)])
+        resp = requests.put(url, json=po_data.to_dict(), headers=self._headers)
+        if resp.status_code > 299:
+            logger.error("Error in update_purchase_order(). Status code: %s", resp.status_code)
+            raise BadRequestException(resp.json()["errors"][0]["message"])
+
+    @auth
+    def cancel_purchase_order(self, po_id: int) -> None:
+        url = "/".join([self._base_url,
+                        M8.endpoints["purchase_orders"]["endpoint"],
+                        str(po_id),
+                        M8.endpoints["purchase_orders"]["methods"]["cancelar"]])
+        resp = requests.post(url, headers=self._headers, json={})
+        if resp.status_code > 299:
+            logger.error("Error in cancel_purchase_order(). Status code: %s", resp.status_code)
+            raise BadRequestException(resp.json()["errors"][0]["message"])
+
+    @auth
     def create_purchase_order_item(self, po_id: int, item: PurchaseOrderItem) -> int:
         url = "/".join([self._base_url,
                         M8.endpoints["purchase_orders"]["endpoint"],
@@ -284,7 +314,7 @@ class M8:
         resp = requests.post(url, json=item.to_dict(), headers=self._headers)
 
         if resp.status_code > 299:
-            logger.error("Error in create_purchase_order(). Status code: %s", resp.status_code)
+            logger.error("Error in create_purchase_order_item(). Status code: %s", resp.status_code)
             raise BadRequestException(resp.json()["errors"][0]["message"])
 
         return resp.json()["data"]["id"]
@@ -301,7 +331,7 @@ class M8:
             url, json=installment.to_dict(), headers=self._headers)
 
         if resp.status_code > 299:
-            logger.error("Error in create_purchase_order(). Status code: %s", resp.status_code)
+            logger.error("Error in create_purchase_order_installment(). Status code: %s", resp.status_code)
             raise BadRequestException(resp.json()["errors"][0]["message"])
 
         return resp.json()["data"]["id"]

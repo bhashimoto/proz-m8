@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -41,32 +41,33 @@ class PurchaseOrder:
     status: str
     emissao: str
     fornecedorId: int
-    funcionarioId: int
-    freteId: int
-    condicaoPagamentoId: int
-    observacao: str
-    items: list[PurchaseOrderItem]
-    installments: list[PurchaseOrderInstallment]
     tipoOrdemCompraId: int
-    tipoOC: str
+    items: list[PurchaseOrderItem] = field(default_factory=list)
+    installments: list[PurchaseOrderInstallment] = field(default_factory=list)
+    funcionarioId: int | None = None
+    freteId: int | None = None
+    condicaoPagamentoId: int | None = None
+    observacao: str | None = None
+    tipoOC: str | None = None
 
-    def to_dict(self, full: bool = False) -> dict:
+    def to_dict(self) -> dict:
         ret = {
             "empresaId": self.empresaId,
             "status": self.status,
             "emissao": self.emissao,
             "fornecedorId": self.fornecedorId,
-            "funcionarioId": self.funcionarioId,
-            "freteId": self.freteId,
-            "condicaoPagamentoId": self.condicaoPagamentoId,
-            "observacao": self.observacao,
             "tipoOrdemCompraId": self.tipoOrdemCompraId,
-            "tipoOC": self.tipoOC,
         }
 
-        if full:
-            ret["items"] = [item.to_dict() for item in self.items]
-            ret["installments"] = [installment.to_dict()
-                                   for installment in self.installments]
+        if self.funcionarioId is not None:
+            ret["funcionarioId"] = self.funcionarioId
+        if self.freteId is not None:
+            ret["freteId"] = self.freteId
+        if self.condicaoPagamentoId is not None:
+            ret["condicaoPagamentoId"] = self.condicaoPagamentoId
+        if self.observacao is not None:
+            ret["observacao"] = self.observacao
+        if self.tipoOC is not None:
+            ret["tipoOC"] = self.tipoOC
 
         return ret

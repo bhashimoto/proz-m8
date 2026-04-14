@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Python library (`proz-m8`) for integrating with the M8 ERP API (`api.integra.m8sistemas.com.br`). It wraps M8's REST API endpoints for invoices, purchase orders, and receivables.
 
+The full M8 API reference is documented in [`m8-api-doc.md`](m8-api-doc.md). Consult it for available endpoints, request/response schemas, enums, and pagination conventions.
+
 ## Setup & Installation
 
 ```bash
