@@ -53,6 +53,27 @@ class M8:
                 "listar_parcelas": "parcela",
             },
         },
+        "invoice_services": {
+            "endpoint": "v1/faturamento/notafiscalvenda",
+            "methods": {
+                "listar_servicos": "servico",
+            }
+        },
+        "services": {
+            "endpoint": "v1/estoque/servico",
+            "methods": {},
+        },
+        "lc116": {
+            "endpoint": "v1/estoque/servicoleicomplementar",
+            "methods": {},
+        },
+        "clients": {
+            "endpoint": "v1/configuracoes/cliente",
+            "methods": {
+                "endereco": "endereco",
+                "contato": "contato",
+            }
+        },
     }
 
     ESTABS = {
@@ -389,6 +410,60 @@ class M8:
                 data[i]['vencimento'] = ""
 
         return data
+
+    @auth
+    def get_invoice_services(self, invoice_id: int) -> list:
+        url = "/".join([self._base_url,
+                        M8.endpoints["invoice_services"]["endpoint"],
+                        str(invoice_id),
+                        M8.endpoints["invoice_services"]["methods"]["listar_servicos"]])
+        return self._request_get_with_query_params(url=url, search_params={})
+
+    @auth
+    def get_service(self, service_id: int) -> dict:
+        url = "/".join([self._base_url,
+                        M8.endpoints["services"]["endpoint"],
+                        str(service_id)])
+        resp = requests.get(url, headers=self._headers)
+        if resp.status_code > 299:
+            raise BadRequestException(resp.json()["errors"][0]["message"])
+        return resp.json()["data"]
+
+    @auth
+    def get_lc116_service(self, lista_servico_id: int) -> dict:
+        url = "/".join([self._base_url,
+                        M8.endpoints["lc116"]["endpoint"],
+                        str(lista_servico_id)])
+        resp = requests.get(url, headers=self._headers)
+        if resp.status_code > 299:
+            raise BadRequestException(resp.json()["errors"][0]["message"])
+        return resp.json()["data"]
+
+    @auth
+    def get_client(self, client_id: int) -> dict:
+        url = "/".join([self._base_url,
+                        M8.endpoints["clients"]["endpoint"],
+                        str(client_id)])
+        resp = requests.get(url, headers=self._headers)
+        if resp.status_code > 299:
+            raise BadRequestException(resp.json()["errors"][0]["message"])
+        return resp.json()["data"]
+
+    @auth
+    def get_client_address(self, client_id: int) -> list:
+        url = "/".join([self._base_url,
+                        M8.endpoints["clients"]["endpoint"],
+                        str(client_id),
+                        M8.endpoints["clients"]["methods"]["endereco"]])
+        return self._request_get_with_query_params(url=url, search_params={})
+
+    @auth
+    def get_client_contacts(self, client_id: int) -> list:
+        url = "/".join([self._base_url,
+                        M8.endpoints["clients"]["endpoint"],
+                        str(client_id),
+                        M8.endpoints["clients"]["methods"]["contato"]])
+        return self._request_get_with_query_params(url=url, search_params={})
 
 
 def load_credentials_from_file(filename: str) -> tuple[str, str]:
