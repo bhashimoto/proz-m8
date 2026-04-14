@@ -5,812 +5,898 @@
 - **Base URL:** `https://api.integra.m8sistemas.com.br`
 - **OpenAPI Spec:** `GET /swagger/v1/swagger.json`
 - **Version:** 1.0 (OpenAPI 3.0.4)
-- **Auth:** Bearer token (JWT) — obtain via `POST /v1/auth/token`
+- **Auth:** Bearer token — obtain via `POST /v1/auth/token`
 
 ---
 
 ## Authentication
 
-### Obtain Token
-`POST /v1/auth/token`
+```
+POST /v1/auth/token
+Content-Type: application/json
 
-**Request body:** `AuthRequestDto`
-```
-tenant     string   (required) - tenant identifier
-username   string   (required)
-password   string   (required)
-company    int32    (required) - company ID
-domain     string?  (optional)
-```
+# Request body
+{ "tenant": string, "username": string, "password": string, "company": int32, "domain": string? }
 
-**Response 200:** `AuthResponseDtoResponseDto`
-```
-data.token       string  - Bearer token to use in Authorization header
-data.expiration  string  - token expiry datetime
-errors           ErrorResponseDto[]?
+# Response 200
+{ "data": { "token": string, "expiration": datetime }, "errors": null }
 ```
 
-**Usage:** Include in all subsequent requests:
-```
-Authorization: Bearer <token>
-```
+Include token in all requests:
+`Authorization: Bearer <token>`
 
 ---
 
 ## Response Envelope
 
-All responses follow this structure:
-
-```
-{
-  "data":   <object | array | null>,
-  "errors": [ { "message": string, "field": string? } ] | null
-}
+All responses follow:
+```json
+{ "data": <T | T[] | null>, "errors": [{ "message": "string", "field": "string?" }] | null }
 ```
 
-- List endpoints return `{ data: T[], errors: ... }`
-- Single-object endpoints return `{ data: T, errors: ... }`
-- Mutation endpoints often return `ObjFormResponseDtoResponseDto`: `{ data: { id: int } }`
-- Empty success returns `EmptyResponseDtoResponseDto`: `{ data: null, errors: null }`
+- **List endpoints** → `{ data: T[], errors: null }`
+- **Single object** → `{ data: T, errors: null }`
+- **Create/Update** → `{ data: { id: int }, errors: null }`
+- **Empty success** → `{ data: null, errors: null }`
 
-**HTTP status codes:**
-- `200` Success
-- `400` Bad Request (validation errors in `errors[]`)
-- `401` Unauthorized
-- `500` Internal Server Error
+**HTTP status codes:** `200` OK · `400` Bad Request · `401` Unauthorized · `500` Internal Error
 
 ---
 
 ## Pagination
 
-List endpoints accept query params:
-```
-Page      integer  (default: 1)
-PageSize  integer  (default: varies)
-```
+All list endpoints accept: `Page` (integer, default 1) and `PageSize` (integer).
 
 ---
 
 ## Endpoints
 
 ### Autenticação
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/auth/token` | Obter Token |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/auth/token` | Obter Token | — |
+
+**`POST` Obter Token — body fields:** `tenant`, `username`, `password`, `company`, `domain`
 
 ---
 
 ### Checklist
-| Method | Path | Summary | Query Params |
-|--------|------|---------|--------------|
-| GET | `/v1/configuracoes/checklist` | Listar Checklists | EstaExcluido, Id, Nome, Page, PageSize |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/configuracoes/checklist` | Listar Checklists | EstaExcluido, Id, Nome, Page, PageSize |
 
 ---
 
 ### Classificação de Pessoas
-| Method | Path | Summary | Query Params |
-|--------|------|---------|--------------|
-| GET | `/v1/configuracoes/classificacaopessoa` | Listar | Id, Nome, Page, PageSize |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/configuracoes/classificacaopessoa` | Listar | Id, Nome, Page, PageSize |
 
 ---
 
 ### Clientes
-| Method | Path | Summary | Notes |
-|--------|------|---------|-------|
-| POST | `/v1/configuracoes/cliente` | Cadastrar | body: `ClienteRequestDto` |
-| GET | `/v1/configuracoes/cliente` | Listar | many query filters |
-| GET | `/v1/configuracoes/cliente/{id}` | Obter por ID | path: `id` |
-| PUT | `/v1/configuracoes/cliente/{id}` | Atualizar | path: `id`, body: `ClienteRequestDto` |
-| GET | `/v1/configuracoes/cliente/{clienteId}/endereco` | Listar Endereços | |
-| POST | `/v1/configuracoes/cliente/{clienteId}/endereco` | Cadastrar Endereço | body: `EnderecoRequestDto` |
-| GET | `/v1/configuracoes/cliente/{clienteId}/tabelapreco` | Listar Tabelas de Preço | |
-| GET | `/v1/configuracoes/cliente/{clienteId}/contato` | Listar Contatos | |
-| POST | `/v1/configuracoes/cliente/{clienteId}/contato` | Cadastrar Contato | body: `ContatoRequestDto` |
-| GET | `/v1/configuracoes/cliente/{clienteId}/historicolimite` | Histórico de Limite | |
-| GET | `/v1/configuracoes/cliente/{clienteId}/vendedor` | Listar Vendedores do Cliente | |
 
-**Lista de clientes — filtros disponíveis:**
-`IndicadorVendaId`, `IndicadorVendaNome`, `Id`, `RazaoSocial`, `Fantasia`, `CpfCnpj`, `DataAtualizacaoInicial`, `DataAtualizacaoFinal`, `Page`, `PageSize`
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar | — |
+| `GET` | `/v1/configuracoes/cliente` | Listar | IndicadorVendaId, IndicadorVendaNome, Id, RazaoSocial, Fantasia, CpfCnpj, DataAtualizacaoInicial, Da |
+| `PATCH` | `_see description_` | Editar | `id`(path) |
+| `GET` | `/v1/configuracoes/cliente/{id}` | Obter | `id`(path) |
+| `GET` | `/v1/configuracoes/cliente/{clienteId}/endereco` | Listar Endereços | `clienteId`(path), TipoEndereco, Cep, DataAtualizacaoInicial, DataAtualizacaoFinal, Page, PageSize |
+| `POST` | `/v1/configuracoes/cliente/{clienteId}/endereco` | Cadastrar Endereço | `clienteId`(path) |
+| `GET` | `/v1/configuracoes/cliente/{clienteId}/tabelapreco` | Listar Tabelas Preços | `clienteId`(path), Page, PageSize |
+| `GET` | `/v1/configuracoes/cliente/{clienteId}/contato` | Listar Contatos | `clienteId`(path), Page, PageSize |
+| `POST` | `/v1/configuracoes/cliente/{clienteId}/contato` | Cadastrar Contato | `clienteId`(path) |
+| `GET` | `/v1/configuracoes/cliente/{clienteId}/historicolimite` | Listar Histórico de Alterações de Limite | `clienteId`(path), Page, PageSize |
+| `POST` | `/v1/configuracoes/cliente/{clienteId}/historicolimite` | Cadastrar Histórico de Alterações de Limite | `clienteId`(path) |
+| `GET` | `/v1/configuracoes/cliente/{clienteId}/vendedor` | Listar Vendedores | `clienteId`(path), Page, PageSize |
+| `POST` | `/v1/configuracoes/cliente/{clienteId}/vendedor` | Cadastrar Vendedor | `clienteId`(path) |
+
+**`POST` Cadastrar — body fields:** `tipoPessoaId`, `classificacaoId`, `cpfCnpj`, `razaoSocial`, `cep`, `logradouro`, `numero`, `bairroId`, `bairroNome`, `municipioId`, `municipioNome`, `uf`, `municipioIbge`, `fantasia`, `complemento`, `letra`, `apelido`, `tabelaPrecoId`, `tipoContribuinte`, `regimeTributario`
+
+**`PATCH` Editar — body fields:** `tipoPessoaId`, `classificacaoId`, `cpfCnpj`, `razaoSocial`, `cep`, `logradouro`, `numero`, `bairroId`, `bairroNome`, `municipioId`, `municipioNome`, `uf`, `municipioIbge`, `fantasia`, `complemento`, `letra`, `apelido`, `tipoContribuinte`, `regimeTributario`, `operacaoConsumidorNFe`
+
+**`POST` Cadastrar Endereço — body fields:** `tipoEndereco`, `cep`, `logradouro`, `numero`, `municipioIbge`, `municipioId`, `municipioNome`, `uf`, `bairroId`, `bairroNome`, `complemento`, `letra`, `razaoSocialRecebimento`, `cpfCnpjRecebimento`, `inscricaoEstadualRecebimento`, `caixaPostal`, `pontoReferencia`
+
+**`POST` Cadastrar Contato — body fields:** `tipo`, `nome`, `telefone`, `email`, `cargoId`, `telefoneAdicional`, `cpfCnpj`, `observacao`
+
+**`POST` Cadastrar Histórico de Alterações de Limite — body fields:** `valorLimiteAtual`, `jurosPadrao`, `dataValidadeLimiteCredito`
+
+**`POST` Cadastrar Vendedor — body fields:** `vendedorId`, `padrao`
 
 ---
 
-### Clientes Adiantamento
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/financeiro/adiantamentocliente` | Cadastrar |
-| GET | `/v1/financeiro/adiantamentocliente` | Listar |
-| GET | `/v1/financeiro/adiantamentocliente/{id}` | Obter por ID |
+### Clientes — Adiantamento
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/financeiro/adiantamentocliente` | Cadastrar | — |
+| `GET` | `/v1/financeiro/adiantamentocliente` | Listar | Id, ClienteId, DataEmissaoInicial, DataEmissaoFinal, DataLancamentoInicial, DataLancamentoFinal, Pag |
+| `PUT` | `/v1/financeiro/adiantamentocliente/{id}` | Editar | `id`(path) |
+
+**`POST` Cadastrar — body fields:** `empresaId`, `clienteId`, `documento`, `valor`, `meioPagamentoId`, `operacaoFinanceiraId`, `contaOrigemId`, `contaDestinoId`, `historicoContabilId`, `dataLancamento`, `dataEmissao`, `moedaId`, `dataValidade`, `status`, `statusAprovacao`, `tipoAdiantamentoId`, `percentualComissao`, `cotacaoMoeda`, `vendedorId`, `especieId`
+
+**`PUT` Editar — body fields:** `empresaId`, `clienteId`, `documento`, `valor`, `meioPagamentoId`, `operacaoFinanceiraId`, `contaOrigemId`, `contaDestinoId`, `historicoContabilId`, `dataLancamento`, `dataEmissao`, `moedaId`, `dataValidade`, `status`, `statusAprovacao`, `tipoAdiantamentoId`, `percentualComissao`, `cotacaoMoeda`, `vendedorId`, `especieId`
 
 ---
 
 ### Condições de Pagamento
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/financeiro/condicaopagamento` | Listar |
-| GET | `/v1/financeiro/condicaopagamento/{id}` | Obter por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar | — |
+| `GET` | `/v1/financeiro/condicaopagamento` | Listar | MeioPagamentoId, MeioPagamentoNome, QuantidadeParcelas, QuantidadeParcelasTef, CodigoMarketplace, De |
+| `GET` | `/v1/financeiro/condicaopagamento/{id}` | Obter | `id`(path) |
+
+**`POST` Cadastrar — body fields:** `tipoPagamento`, `empresaGrupoId`, `nome`, `abreviatura`, `meioPagamentoId`, `codigoNfe`, `enviarNfe`, `lancamentoPermitido`, `dataGerarParcelas`, `percentualOperadoraCartao`, `vencimentoFimSemana`, `exibirPdv`, `enviarECF`, `imprimirConfissaoDivida`, `condicaoEspecial`, `informarTefPos`, `nomePdv`, `exibeAutorizacaoPagamento`, `exibeAutorizacaoAdiantamento`, `entradaAntecipada`
 
 ---
 
 ### Contas à Pagar
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/financeiro/contapagar` | Cadastrar |
-| GET | `/v1/financeiro/contapagar` | Listar |
-| GET | `/v1/financeiro/contapagar/{id}` | Obter por ID |
-| PUT | `/v1/financeiro/contapagar/{id}` | Atualizar |
-| GET | `/v1/financeiro/contapagar/consulta` | Consulta |
-| GET | `/v1/financeiro/contapagar/{tituloId}/parcela` | Listar Parcelas |
-| POST | `/v1/financeiro/contapagar/{tituloId}/baixa` | Baixar |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar | — |
+| `GET` | `/v1/financeiro/contapagar` | Listar | Id, FornecedorId, Documento, DataEmissaoInicial, DataEmissaoFinal, Page, PageSize |
+| `PUT` | `_see description_` | Editar | `id`(path) |
+| `GET` | `/v1/financeiro/contapagar/consulta` | Consultar | Id, FornecedorId, Documento, VencimentoInicial, VencimentoFinal |
+| `GET` | `/v1/financeiro/contapagar/{tituloId}/parcela` | Listar Parcelas | `tituloId`(path), Page, PageSize |
+| `GET` | `/v1/financeiro/contapagar/{tituloId}/baixa` | Listar Baixas | `tituloId`(path), Page, PageSize |
+
+**`POST` Cadastrar — body fields:** `empresaId`, `fornecedorId`, `documento`, `dataEmissao`, `dataEntrada`, `condicaoPagamentoId`, `operacaoFinanceiraId`, `moedaId`, `valor`, `dataCompetencia`, `pessoaCompraId`, `especieId`, `contaContabilCreditoId`, `historicoId`, `contaContabilDespesaId`, `historicoDespesaId`, `centroCustoId`, `projetoExecucaoTarefaItemId`, `statusAprovacao`, `status`
+
+**`PUT` Editar — body fields:** `empresaId`, `fornecedorId`, `documento`, `dataEmissao`, `dataEntrada`, `condicaoPagamentoId`, `operacaoFinanceiraId`, `moedaId`, `valor`, `dataCompetencia`, `pessoaCompraId`, `especieId`, `contaContabilCreditoId`, `historicoId`, `contaContabilDespesaId`, `historicoDespesaId`, `centroCustoId`, `projetoExecucaoTarefaItemId`, `statusAprovacao`, `status`
 
 ---
 
 ### Contas à Receber
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/financeiro/contareceber` | Cadastrar |
-| GET | `/v1/financeiro/contareceber` | Listar |
-| GET | `/v1/financeiro/contareceber/{id}` | Obter por ID |
-| GET | `/v1/financeiro/contareceber/{tituloId}/parcela` | Listar Parcelas |
-| GET | `/v1/financeiro/contareceber/importacao/{tituloCodigoImportacao}/parcela` | Parcelas por Código Importação |
-| PUT | `/v1/financeiro/contareceber/{tituloId}/parcela/{id}` | Atualizar Parcela |
-| POST | `/v1/financeiro/contareceber/{tituloId}/baixa` | Baixar |
-| POST | `/v1/financeiro/contareceber/{tituloId}/cancelarbaixa` | Cancelar Baixa |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar | — |
+| `GET` | `/v1/financeiro/contareceber` | Listar | Id, ClienteId, Documento, CodigoImportacao, DataEmissaoInicial, DataEmissaoFinal, Page, PageSize |
+| `PUT` | `_see description_` | Editar | `id`(path) |
+| `POST` | `/v1/financeiro/contareceber/{tituloId}/parcela` | Cadastrar Parcela | `tituloId`(path) |
+| `GET` | `/v1/financeiro/contareceber/{tituloId}/parcela` | Listar Parcelas | `tituloId`(path), Page, PageSize |
+| `POST` | `/v1/financeiro/contareceber/importacao/{tituloCodigoImportacao}/parcela` | Cadastrar Parcela (Cód. Importação) | `tituloCodigoImportacao`(path) |
+| `GET` | `/v1/financeiro/contareceber/importacao/{tituloCodigoImportacao}/parcela` | Listar Parcelas (Cód. Importação) | `tituloCodigoImportacao`(path), Page, PageSize |
+| `PATCH` | `/v1/financeiro/contareceber/{tituloId}/parcela/{id}` | Editar Parcela | `tituloId`(path), `id`(path) |
+| `GET` | `/v1/financeiro/contareceber/{tituloId}/baixa` | Listar Baixas | `tituloId`(path), Page, PageSize |
+| `POST` | `/v1/financeiro/contareceber/{tituloId}/baixa/parcela/{tituloParcelaId}` | Baixar Parcela | `tituloParcelaId`(path), `tituloId`(path) |
+| `POST` | `/v1/financeiro/contareceber/importacao/{tituloCodigoImportacao}/baixa/parcela` | Baixar Parcela (Cód. Importação) | `tituloCodigoImportacao`(path) |
+| `POST` | `/v1/financeiro/contareceber/{tituloId}/extorno/parcela/{tituloParcelaId}` | Extornar Parcela | `tituloParcelaId`(path), `tituloId`(path) |
+| `POST` | `/v1/financeiro/contareceber/importacao/{tituloCodigoImportacao}/extorno/parcela` | Extornar Parcela (Cód. Importação) | `tituloCodigoImportacao`(path) |
+| `GET` | `/v1/financeiro/contareceber/consulta` | Consultar | Id, ClienteId, Documento, VencimentoInicial, VencimentoFinal |
+
+**`POST` Cadastrar — body fields:** `empresaId`, `clienteId`, `documento`, `dataEmissao`, `dataEntrada`, `condicaoPagamentoId`, `operacaoFinanceiraId`, `moedaId`, `especieId`, `valor`, `dataCompetencia`, `codigoImportacao`, `pessoaVendaId`, `contaContabilCreditoId`, `historicoId`, `contaContabilDespesaId`, `historicoDespesaId`, `centroCustoId`, `projetoExecucaoTarefaItemId`, `statusAprovacao`
+
+**`PUT` Editar — body fields:** `empresaId`, `clienteId`, `documento`, `dataEmissao`, `dataEntrada`, `condicaoPagamentoId`, `operacaoFinanceiraId`, `moedaId`, `especieId`, `valor`, `dataCompetencia`, `codigoImportacao`, `pessoaVendaId`, `contaContabilCreditoId`, `historicoId`, `contaContabilDespesaId`, `historicoDespesaId`, `centroCustoId`, `projetoExecucaoTarefaItemId`, `statusAprovacao`
+
+**`POST` Cadastrar Parcela — body fields:** `vencimento`, `valor`, `condicaoPagamentoId`, `previsaoPagamento`, `cotacaoMoeda`, `percentualComissao`, `vendedorId`, `portadorId`, `codigoImportacao`, `complemento`, `observacao`, `observacaoCobranca`, `observacaoInterna`
+
+**`POST` Cadastrar Parcela (Cód. Importação) — body fields:** `vencimento`, `valor`, `condicaoPagamentoId`, `previsaoPagamento`, `cotacaoMoeda`, `percentualComissao`, `vendedorId`, `portadorId`, `codigoImportacao`, `complemento`, `observacao`, `observacaoCobranca`, `observacaoInterna`
+
+**`PATCH` Editar Parcela — body fields:** `vencimento`, `valor`, `condicaoPagamentoId`, `previsaoPagamento`, `cotacaoMoeda`, `percentualComissao`, `vendedorId`, `codigoImportacao`, `complemento`, `observacao`, `observacaoCobranca`
+
+**`POST` Baixar Parcela — body fields:** `data`, `contaContabilId`, `historicoId`, `meioPagamentoId`, `valor`, `chequeId`, `valorJuros`, `valorMulta`, `valorDesconto`, `taxaOperadoraCartao`, `observacaoInterna`, `complemento`
+
+**`POST` Baixar Parcela (Cód. Importação) — body fields:** `data`, `contaContabilId`, `historicoId`, `meioPagamentoId`, `valor`, `chequeId`, `valorJuros`, `valorMulta`, `valorDesconto`, `taxaOperadoraCartao`, `observacaoInterna`, `complemento`
+
+**`POST` Extornar Parcela — body fields:** `json`
+
+**`POST` Extornar Parcela (Cód. Importação) — body fields:** `json`
 
 ---
 
-### Contratos Serviços
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/contratoservico/contratoservico` | Cadastrar |
-| GET | `/v1/contratoservico/contratoservico` | Listar |
-| GET | `/v1/contratoservico/contratoservico/{id}` | Obter por ID |
+### Contratos de Serviços
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/contratos/contratoservico` | Cadastrar | — |
+| `GET` | `/v1/contratos/contratoservico` | Listar | Id, Descricao, TipoContratoId, EstabelecimentoId, PessoaId, Page, PageSize |
+| `POST` | `/v1/contratos/contratoservico/{contratoId}/valorfixo` | Cadastrar Valor Fixo | `contratoId`(path) |
+| `GET` | `/v1/contratos/contratoservico/{contratoId}/valorfixo` | Listar Valores Fixos | `contratoId`(path), Page, PageSize |
+| `PATCH` | `/v1/contratos/contratoservico/{contratoId}/valorfixo/{id}` | Editar Valor Fixo | `contratoId`(path), `id`(path) |
+| `POST` | `/v1/contratos/contratoservico/{contratoId}/valorvariavel` | Cadastrar Valor Variável | `contratoId`(path) |
+| `GET` | `/v1/contratos/contratoservico/{contratoId}/valorvariavel` | Listar Valor Variável | `contratoId`(path), Page, PageSize |
+| `PATCH` | `/v1/contratos/contratoservico/{contratoId}/valorvariavel/{id}` | Editar Valor Variável | `contratoId`(path), `id`(path) |
+
+**`POST` Cadastrar — body fields:** `descricao`, `estabelecimentoId`, `pessoaId`, `condicaoPagamentoId`, `emissao`, `inicioFaturamento`, `inicio`, `valor`, `periodicidade`, `reajusteAutomatico`, `descontoAdimplencia`, `final`, `tipoContratoId`, `slaId`, `projetoId`, `municipioPrestacaoId`, `bancoHoras`, `dataBancoHoras`, `valorHora`, `totalHorasValor`
+
+**`POST` Cadastrar Valor Fixo — body fields:** `produtoId`, `inicioFaturamento`, `quantidade`, `valor`, `total`, `descricaoDetalhadaNFe`, `municipioPrestacaoId`, `separarFaturamento`, `finalFaturamento`, `fornecedorId`, `clienteId`, `condicaoPagamentoId`, `vendedorId`, `operacaoFiscalId`, `percentualComissao`, `diaVencimento`, `periodicidadeFaturamento`, `observacoesNf`, `observacoes`
+
+**`PATCH` Editar Valor Fixo — body fields:** `produtoId`, `descricaoDetalhadaNFe`, `municipioPrestacaoId`, `diaVencimento`, `condicaoPagamentoId`, `vendedorId`, `operacaoFiscalId`, `observacoes`, `observacoesNf`, `quantidade`, `valor`, `percentualComissao`, `periodicidadeFaturamento`, `separarFaturamento`, `inicioFaturamento`, `finalFaturamento`, `clienteId`, `fornecedorId`
+
+**`POST` Cadastrar Valor Variável — body fields:** `produtoId`, `inicioFaturamento`, `quantidade`, `valor`, `total`, `diaVencimento`, `percentualComissao`, `condicaoPagamentoId`, `fornecedorId`, `descricaoDetalhadaNFe`, `operacaoFiscalId`, `vendedorId`, `observacoesNf`, `observacoes`
+
+**`PATCH` Editar Valor Variável — body fields:** `produtoId`, `descricaoDetalhadaNFe`, `diaVencimento`, `condicaoPagamentoId`, `vendedorId`, `observacoes`, `observacoesNf`, `ordensServicos`, `quantidade`, `valor`, `percentualComissao`, `inicioFaturamento`, `clienteId`, `fornecedorId`, `operacaoFiscalId`
 
 ---
 
-### CRM - Contas
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/crm/conta` | Cadastrar |
-| GET | `/v1/crm/conta` | Listar |
-| GET | `/v1/crm/conta/{id}` | Obter por ID |
-| PUT | `/v1/crm/conta/{id}` | Atualizar |
-| POST | `/v1/crm/conta/{contaId}/contato` | Cadastrar Contato |
-| GET | `/v1/crm/conta/{contaId}/contato` | Listar Contatos |
-| POST | `/v1/crm/conta/{contaId}/comentario` | Cadastrar Comentário |
-| GET | `/v1/crm/conta/{contaId}/comentario` | Listar Comentários |
+### CRM — Contas
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar | — |
+| `GET` | `/v1/crm/conta` | Listar | Id, TipoConta, RazaoSocial, Fantasia, CpfCnpj, MunicipioNome, Ativo, Bloqueado, Page, PageSize |
+
+**`POST` Cadastrar — body fields:** `empresaGrupoId`, `tipoConta`, `tipoPessoaInt`, `razaoSocial`, `fantasia`, `cpfCnpj`, `inscricaoEstadual`, `telefone`, `telefoneAdicional`, `site`, `email`, `dataAbertura`, `status`, `clienteId`, `tipoPessoaId`, `numeroExterior`, `grupoEconomicoId`, `porteId`, `rating`, `numeroFuncionarios`
 
 ---
 
-### CRM - Oportunidades
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/crm/oportunidade` | Cadastrar |
-| GET | `/v1/crm/oportunidade` | Listar |
-| GET | `/v1/crm/oportunidade/{id}` | Obter por ID |
-| PUT | `/v1/crm/oportunidade/{id}` | Atualizar |
-| POST | `/v1/crm/oportunidade/{oportunidadeId}/produto` | Cadastrar Produto |
-| GET | `/v1/crm/oportunidade/{oportunidadeId}/produto` | Listar Produtos |
-| POST | `/v1/crm/oportunidade/{oportunidadeId}/comentario` | Cadastrar Comentário |
-| GET | `/v1/crm/oportunidade/{oportunidadeId}/comentario` | Listar Comentários |
-| POST | `/v1/crm/oportunidade/{oportunidadeId}/anexo` | Cadastrar Anexo |
+### CRM — Oportunidades
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/crm/oportunidade` | Cadastrar | — |
+| `GET` | `/v1/crm/oportunidade` | Listar | Id, ContatoPessoaId, ContatoPessoaNome, ModalidadeNegocioId, ModalidadeNegocioNome, OrigemId, Origem |
+| `POST` | `/v1/crm/oportunidade/{oportunidadeId}/responsavel` | Cadastrar Responsável | `oportunidadeId`(path) |
+| `GET` | `/v1/crm/oportunidade/{oportunidadeId}/responsavel` | Listar Responsáveis | `oportunidadeId`(path), Page, PageSize |
+| `POST` | `/v1/crm/oportunidade/{oportunidadeId}/acao` | Cadastrar Ação | `oportunidadeId`(path) |
+| `GET` | `/v1/crm/oportunidade/{oportunidadeId}/acao` | Listar Ações | `oportunidadeId`(path), Page, PageSize |
+| `POST` | `/v1/crm/oportunidade/{oportunidadeId}/concorrente` | Cadastrar Concorrente | `oportunidadeId`(path) |
+| `GET` | `/v1/crm/oportunidade/{oportunidadeId}/concorrente` | Listar Concorrentes | `oportunidadeId`(path), Page, PageSize |
+| `POST` | `/v1/crm/oportunidade/{oportunidadeId}/comentario` | Cadastrar Comentário | `oportunidadeId`(path) |
+| `GET` | `/v1/crm/oportunidade/{oportunidadeId}/comentario` | Listar Comentários | `oportunidadeId`(path), Page, PageSize |
+| `POST` | `/v1/crm/oportunidade/{oportunidadeId}/anexo` | Cadastrar Anexo | `oportunidadeId`(path) |
+| `GET` | `/v1/crm/oportunidade/{oportunidadeId}/anexo` | Listar Anexos | `oportunidadeId`(path), Page, PageSize |
+| `GET` | `/v1/crm/oportunidade/{oportunidadeId}/anexo/{anexoId}` | Obter Anexo | `oportunidadeId`(path), `anexoId`(path) |
+
+**`POST` Cadastrar — body fields:** `empresaGrupoId`, `dataAbertura`, `horaAbertura`, `descricao`, `contaId`, `tipoOportunidadeId`, `origemId`, `etapaNegociacao`, `previsaoFechamento`, `dataAcompanhamento`, `efetivacaoFechamento`, `previsaoEntrega`, `efetivacaoEntrega`, `valorPrevisto`, `valorFechado`, `vendedorId`, `modalidadeNegocioId`, `contatoPessoaId`, `oportunidadeStatusId`, `finalizarAgendamento`
+
+**`POST` Cadastrar Responsável — body fields:** `usuariosId`, `of`
+
+**`POST` Cadastrar Ação — body fields:** `data`, `hora`, `previsaoFechamento`, `tipoAcaoId`, `modificaOportunidade`, `valorPrevisto`, `arquivo`, `etapaNegociacao`, `contaContatoId`, `valorFechado`, `tarefaAgenda`, `probabilidade`, `numeroProposta`, `numeroPedido`, `efetivacaoFechamento`, `previsaoEntrega`, `efetivacaoEntrega`, `motivoPerdaId`, `motivoFechamentoId`, `orcamentoFechamentoId`
+
+**`POST` Cadastrar Concorrente — body fields:** `concorrenteId`, `pontosFortes`, `pontosFracos`, `observacoes`
+
+**`POST` Cadastrar Comentário — body fields:** `dataHora`, `hora`, `usuarioId`, `comentario`
+
+**`POST` Cadastrar Anexo — body fields:** `nome`, `arquivo`
 
 ---
 
-### CRM - Orçamentos
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/crm/orcamento` | Listar |
-| GET | `/v1/crm/orcamento/{id}` | Obter por ID |
+### CRM — Orçamentos
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/crm/orcamento` | Listar | Id, ClienteId, ClienteNome, Status, DataEmissaoInicial, DataEmissaoFinal, NumeroProposta, StatusLanc |
+| `GET` | `/v1/crm/orcamento/{orcamentoId}/imprimir` | Imprimir | `orcamentoId`(path), Tipos, of |
+| `GET` | `/v1/crm/orcamento/{orcamentoId}/produto` | Listar Produtos | `orcamentoId`(path), Page, PageSize |
+| `GET` | `/v1/crm/orcamento/{orcamentoId}/servico` | Listar Serviços | `orcamentoId`(path), Page, PageSize |
+| `GET` | `/v1/crm/orcamento/{orcamentoId}/vendedor` | Listar Vendedores | `orcamentoId`(path), Page, PageSize |
 
 ---
 
 ### Endereços
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/configuracoes/endereco/municipio` | Listar Municípios |
-| GET | `/v1/configuracoes/endereco/bairro` | Listar Bairros |
-| GET | `/v1/configuracoes/endereco/cep/{cep}` | Consultar CEP |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/configuracoes/bairro` | Cadastrar Bairro | — |
+| `GET` | `/v1/configuracoes/bairro` | Listar Bairros | MunicipioId, Id, Nome, Page, PageSize |
+| `POST` | `/v1/configuracoes/municipio` | Cadastrar Municipio | — |
+| `GET` | `/v1/configuracoes/municipio` | Listar Municipio | EstadoId, EstadoUf, Ibge, Id, Nome, Page, PageSize |
+| `GET` | `/v1/configuracoes/estado` | Listar Estados | Uf, PaisId, PaisNome, Id, Nome, Page, PageSize |
+| `GET` | `/v1/configuracoes/endereco` | Listar Endereços | TipoEndereco, Cep, DataAtualizacaoInicial, DataAtualizacaoFinal, Page, PageSize |
+
+**`POST` Cadastrar Bairro — body fields:** `nome`, `municipioId`
+
+**`POST` Cadastrar Municipio — body fields:** `nome`, `estadoId`, `ibge`, `cep`, `siafi`, `tributacaoNfse`, `codigoEstadual`, `aliquotaISS`, `estrangeira`, `comarcaId`, `enviaMunicipioPrestacao`
 
 ---
 
 ### Equipamentos
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/configuracoes/equipamento` | Listar |
-| GET | `/v1/configuracoes/equipamento/{id}` | Obter por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar | — |
+| `GET` | `/v1/estoque/equipamento` | Listar | Id, Nome, Apelido, CodigoIdentificacaoInterno, CodigoBarras, MarcaId, GrupoEstoqueId, FamiliaId, Cat |
+| `GET` | `/v1/estoque/equipamento/pessoa/{pessoaId}` | Listar Equipamentos Pessoa | `pessoaId`(path), Page, PageSize |
+
+**`POST` Cadastrar — body fields:** `origem`, `nome`, `apelido`, `ncm`, `codigoTipoSped`, `unidadeId`, `familiaId`, `grupoEstoqueId`, `codigoGenero`, `codigoMarketPlace`, `referenciaFabricante`, `codigoSimilaridade`, `codigoImportacao`, `codigoBarras`, `capacidadeNominal`, `bateria`, `codigoEspecificadorCEST`, `categoriaId`, `precoVenda`, `precoVendaMinimo`
 
 ---
 
 ### Estoque
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/estoque/estoque` | Listar Saldo Estoque |
-| POST | `/v1/estoque/estoque/movimentacao` | Movimentar Estoque |
-| GET | `/v1/estoque/estoque/movimentacao` | Listar Movimentações |
-| GET | `/v1/estoque/local` | Listar Locais de Estoque |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/estoque/produto/{produtoId}/estoque` | Consultar Por Produto | `produtoId`(path), EstabelecimentoId, EmpresaGrupoId, StatusAprovacao, Page, PageSize |
+| `GET` | `/v1/estoque/movimentacaofuturo` | Consultar Movimentação Estoque Futuro | DataInicial, DataFinal, EmpresaGrupoId, EmpresaId, ProdutoServicoId, CodigoIdentificacaoInterno, Pes |
+| `GET` | `/v1/estoque/movimentacaofuturodisponivel` | Consultar Movimentação Estoque Futuro Disponível | QuantidadeRequerida, EmpresaGrupoId, EmpresaId, ProdutoServicoId, ProdutoServicoIds, of, CodigoIdent |
+| `GET` | `/v1/estoque/tabelaprecoprodutosaldo` | Consultar Tabela Preços/Saldo | ProdutoId, ProdutoNome, ProdutoApelido, CodigoIdentificacaoInterno, of, TabelaPrecoId, GrupoEstoqueI |
+| `GET` | `/v1/estoque/estoquedisponivelestabelecimento` | Consultar Por Produto/Estabelecimento (Disponível) | EmpresaId, ProdutosIds, of, Page, PageSize |
 
 ---
 
 ### Follow Up (Clientes/Contas)
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/configuracoes/followup` | Cadastrar |
-| GET | `/v1/configuracoes/followup` | Listar |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/crm/pessoa/{pessoaId}/followup` | Cadastrar | `pessoaId`(path) |
+| `GET` | `/v1/crm/pessoa/{pessoaId}/followup` | Listar | `pessoaId`(path), Page, PageSize |
+
+**`POST` Cadastrar — body fields:** `usuarioId`, `dataHora`, `tipoAcaoId`, `observacao`, `contatoId`, `documentoFiscalId`, `latitude`, `longitude`
 
 ---
 
 ### Fornecedores
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/configuracoes/fornecedor` | Cadastrar |
-| GET | `/v1/configuracoes/fornecedor` | Listar |
-| GET | `/v1/configuracoes/fornecedor/{id}` | Obter por ID |
-| PUT | `/v1/configuracoes/fornecedor/{id}` | Atualizar |
-| GET | `/v1/configuracoes/fornecedor/{fornecedorId}/endereco` | Listar Endereços |
-| POST | `/v1/configuracoes/fornecedor/{fornecedorId}/endereco` | Cadastrar Endereço |
-| GET | `/v1/configuracoes/fornecedor/{fornecedorId}/contato` | Listar Contatos |
-| POST | `/v1/configuracoes/fornecedor/{fornecedorId}/contato` | Cadastrar Contato |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar | — |
+| `GET` | `/v1/configuracoes/fornecedor` | Listar | Id, RazaoSocial, Fantasia, CpfCnpj, DataAtualizacaoInicial, DataAtualizacaoFinal, Page, PageSize |
+| `GET` | `/v1/configuracoes/fornecedor/{id}` | Obter | `id`(path) |
+| `GET` | `/v1/configuracoes/fornecedor/{fornecedorId}/endereco` | Listar Endereços | `fornecedorId`(path), TipoEndereco, Cep, DataAtualizacaoInicial, DataAtualizacaoFinal, Page, PageSiz |
+
+**`POST` Cadastrar — body fields:** `tipoPessoaId`, `classificacaoId`, `cpfCnpj`, `razaoSocial`, `cep`, `logradouro`, `numero`, `bairroId`, `bairroNome`, `municipioId`, `municipioNome`, `uf`, `municipioIbge`, `fantasia`, `complemento`, `letra`, `apelido`, `tipoContribuinte`, `regimeTributario`, `operacaoConsumidorNFe`
 
 ---
 
 ### Fretes
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/configuracoes/frete` | Listar |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/configuracoes/frete` | Listar | Id, Nome, Page, PageSize |
 
 ---
 
 ### Funcionarios
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/configuracoes/funcionario` | Listar |
-| GET | `/v1/configuracoes/funcionario/{id}` | Obter por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/configuracoes/funcionario` | Cadastrar | — |
+| `GET` | `/v1/configuracoes/funcionario` | Listar | Id, RazaoSocial, Fantasia, CpfCnpj, DataAtualizacaoInicial, DataAtualizacaoFinal, Page, PageSize |
+
+**`POST` Cadastrar — body fields:** `tipoPessoa`, `cpfCnpj`, `razaoSocial`, `cep`, `logradouro`, `numero`, `bairroId`, `municipioId`, `fantasia`, `complemento`, `letra`, `telefone`, `email`, `inscricaoEstadual`
 
 ---
 
 ### Logs
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/utilitarios/log` | Listar Logs |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/logs/operacao` | Listar Log de Operações | Id, Tabela, CriadoEmInicial, CriadoEmFinal, RotuloCampo, ValorAnterior, ValorAtual, GeradoPor, Page, |
 
 ---
 
 ### Meios de Pagamento
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/financeiro/meiopagamento` | Listar |
-| GET | `/v1/financeiro/meiopagamento/{id}` | Obter por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/financeiro/meiopagamento` | Listar | Id, Nome, Page, PageSize |
 
 ---
 
 ### Montagem de Carga
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/faturamento/montagemcarga` | Listar |
-| GET | `/v1/faturamento/montagemcarga/{id}` | Obter por ID |
-| POST | `/v1/faturamento/montagemcarga` | Cadastrar |
-| PUT | `/v1/faturamento/montagemcarga/{id}` | Atualizar |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/faturamento/montagemcarga` | Listar | Id, EmpresaGrupoId, Status, DescricaoCarga, DataCarregamentoInicial, DataCarregamentoFinal, DataAtua |
+| `GET` | `/v1/faturamento/montagemcarga/{montagemCargaId}/item` | Listar Itens por ID Carga | `montagemCargaId`(path) |
+| `GET` | `/v1/faturamento/montagemcarga/item` | Listar Itens | Id, MontagemCargaId, PedidoId, ProdutoId, DataAtualizacaoInicial, DataAtualizacaoFinal, Page, PageSi |
 
 ---
 
-### Ncm/Ibpt
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/fiscal/ncm` | Listar NCM |
-| GET | `/v1/fiscal/ibpt` | Consultar IBPT |
+### NCM/IBPT
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/estoque/ncm` | Listar | Id, Descricao, Ncm, Excecao, Page, PageSize |
 
 ---
 
-### Notas Fiscais (Compra)
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/fiscal/notafiscalcompra` | Cadastrar |
-| GET | `/v1/fiscal/notafiscalcompra` | Listar |
-| GET | `/v1/fiscal/notafiscalcompra/{id}` | Obter por ID |
-| POST | `/v1/fiscal/notafiscalcompra/{id}/cancelar` | Cancelar |
+### Notas Fiscais — Compra
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar | — |
+| `GET` | `/v1/compras/notafiscal` | Listar | Id, PessoaId, FornecedorCnpj, Documento, ChaveNfe, Status, EmissaoInicial, EmissaoFinal, Page, PageS |
+| `POST` | `_see description_` | Cadastrar Produto | `documentoFiscalId`(path) |
+| `GET` | `/v1/compras/notafiscal/{documentoFiscalId}/produto` | Listar Produtos | `documentoFiscalId`(path), Page, PageSize |
+| `POST` | `/v1/compras/notafiscal/{documentoFiscalId}/servico` | Cadastrar Serviço | `documentoFiscalId`(path) |
+| `GET` | `/v1/compras/notafiscal/{documentoFiscalId}/servico` | Listar Serviços | `documentoFiscalId`(path), Page, PageSize |
+
+**`POST` Cadastrar — body fields:** `empresaId`, `pessoaId`, `tipoCompraId`, `emissao`, `lancamento`, `freteId`, `condicaoPagamentoId`, `sintegraId`, `documento`, `serie`, `especieDocumento`, `especieId`, `status`, `participanteId`, `moedaId`, `municipioOrigemId`, `municipioDestinoId`, `chaveNfe`, `imovelRuralId`, `documentoFiscalSaidaId`
+
+**`POST` Cadastrar Produto — body fields:** `produtoId`, `operacaoFiscalId`, `destinoEstoqueId`, `quantidade`, `valorUnitario`, `contaContabilId`, `centroCustoId`, `projetoExecucaoId`, `projetoExecucaoTarefaItemId`, `destinoEstoqueTerceiroId`, `fatorConversao`, `quantidadeConversao`, `valorUnitarioConversao`, `unidadeFatorConversaoId`, `vendedorId`, `custoOperacao`, `valorFreteRateio`, `valorFreteAPagarRateio`, `outrasDespesas`, `custoDolar`
+
+**`POST` Cadastrar Serviço — body fields:** `produtoId`, `operacaoFiscalId`, `quantidade`, `valorUnitario`, `contaContabilId`, `centroCustoId`, `vendedorId`, `projetoExecucaoId`, `projetoExecucaoTarefaItemId`, `ordemProducaoId`, `operacaoFinanceiraId`, `aliquotaIss`, `aliquotaInss`, `aliquotaIrrf`, `aliquotaPis`, `aliquotaCofins`, `aliquotaCsll`, `codigoTributarioIbsCbs`, `aliquotaCbs`, `percentualReducaoCbs`
 
 ---
 
-### Notas Fiscais (Outras)
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/fiscal/notafiscaloutras` | Cadastrar |
-| GET | `/v1/fiscal/notafiscaloutras` | Listar |
-| GET | `/v1/fiscal/notafiscaloutras/{id}` | Obter por ID |
-| POST | `/v1/fiscal/notafiscaloutras/{id}/faturar` | Faturar |
-| PUT | `/v1/fiscal/notafiscaloutras/{id}/atualizar` | Atualizar |
-| POST | `/v1/fiscal/notafiscaloutras/{id}/cancelar` | Cancelar |
+### Notas Fiscais — Outras
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/faturamento/notafiscaloutra` | Listar | Id, PessoaId, PessoaNome, PessoaCnpj, Documento, ChaveNfe, Status, EmissaoInicial, EmissaoFinal, Pag |
+| `GET` | `/v1/faturamento/notafiscaloutra/{documentoFiscalId}/produto` | Listar Produtos | `documentoFiscalId`(path), Page, PageSize |
+| `GET` | `/v1/faturamento/notafiscaloutra/{documentoFiscalId}/servico` | Listar Serviços | `documentoFiscalId`(path), Page, PageSize |
 
 ---
 
-### Notas Fiscais (Venda)
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/fiscal/notafiscalvenda` | Listar |
-| GET | `/v1/fiscal/notafiscalvenda/{id}` | Obter por ID |
-| POST | `/v1/fiscal/notafiscalvenda/{id}/cancelar` | Cancelar |
-| POST | `/v1/fiscal/notafiscalvenda/{id}/cartacorrecao` | Carta de Correção |
+### Notas Fiscais — Venda
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/faturamento/notafiscalvenda` | Listar | Id, PessoaId, PessoaNome, PessoaCnpj, Documento, ChaveNfe, Status, EmissaoInicial, EmissaoFinal, Usu |
+| `PATCH` | `/v1/faturamento/notafiscalvenda/{documentoFiscalId}` | Editar | `documentoFiscalId`(path) |
+| `GET` | `/v1/faturamento/notafiscalvenda/{documentoFiscalId}/produto` | Listar Produtos | `documentoFiscalId`(path), Page, PageSize |
+| `GET` | `/v1/faturamento/notafiscalvenda/{documentoFiscalId}/servico` | Listar Serviços | `documentoFiscalId`(path), Page, PageSize |
+| `POST` | `/v1/faturamento/notafiscalvenda/{documentoFiscalId}/faturar` | Faturar | `documentoFiscalId`(path) |
+| `POST` | `/v1/faturamento/notafiscalvenda/{documentoFiscalId}/cancelar` | Cancelar | `documentoFiscalId`(path) |
+| `POST` | `/v1/faturamento/notafiscalvenda/importar` | Importar | — |
+| `GET` | `/v1/faturamento/notafiscalvenda/{documentoFiscalId}/danfe` | Imprimir Danfe | `documentoFiscalId`(path) |
+| `GET` | `/v1/faturamento/notafiscalvenda/centrocusto` | Centro de Custos | Id, DocumentoFiscalId, CentroCustoId, CentroCustoClassificacao, Natureza, OperacaoFinanceiraId, Data |
+
+**`PATCH` Editar — body fields:** `municipioPrestacaoId`, `emissao`
+
+**`POST` Faturar — body fields:** `json`
+
+**`POST` Cancelar — body fields:** `motivo`
+
+**`POST` Importar — body fields:** `dataLote`, `documentos`
 
 ---
 
 ### Números de Série
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/configuracoes/numeroserie` | Listar |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/faturamento/numeroserie` | Listar | ProdutoId, ProdutoNome, NumeroSerie, PedidoId, PedidoItemId, OrdemServicoSaidaId, OrdemServicoItemId |
 
 ---
 
 ### Operações Fiscais
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/fiscal/operacaofiscal` | Listar |
-| GET | `/v1/fiscal/operacaofiscal/{id}` | Obter por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/configuracoes/operacaofiscal` | Listar | CodigoImportacao, TipoOperacao, TipoEmissor, EmpresaGrupoNome, CfopComInscricaoEstadualDentro, CfopC |
 
 ---
 
 ### Orçamentos (Faturamento)
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/faturamento/orcamento` | Cadastrar |
-| GET | `/v1/faturamento/orcamento` | Listar |
-| GET | `/v1/faturamento/orcamento/{id}` | Obter por ID |
-| PUT | `/v1/faturamento/orcamento/{id}` | Atualizar |
-| POST | `/v1/faturamento/orcamento/{id}/cancelar` | Cancelar |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/faturamento/orcamento` | Listar | Id, ClienteId, ClienteNome, Status, TipoId, TabelaPrecoId, ContratoId, EmissaoInicial, EmissaoFinal, |
+| `GET` | `/v1/faturamento/orcamento/{orcamentoId}/produto` | Listar Produtos | `orcamentoId`(path), Page, PageSize |
+| `GET` | `/v1/faturamento/orcamento/{orcamentoId}/servico` | Listar Serviços | `orcamentoId`(path), Page, PageSize |
+| `GET` | `/v1/faturamento/orcamento/{orcamentoId}/parcela` | Listar Parcelas | `orcamentoId`(path), Page, PageSize |
 
 ---
 
 ### Ordens de Compra
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/compras/ordemcompra` | Cadastrar |
-| GET | `/v1/compras/ordemcompra` | Listar |
-| GET | `/v1/compras/ordemcompra/{id}` | Obter por ID |
-| PUT | `/v1/compras/ordemcompra/{id}` | Atualizar |
-| GET | `/v1/compras/ordemcompra/{ordemCompraId}/item` | Listar Itens |
-| POST | `/v1/compras/ordemcompra/{ordemCompraId}/cancelar` | Cancelar |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar | — |
+| `GET` | `/v1/compras/ordemcompra` | Listar | Id, ClienteId, DataEmissaoInicial, DataEmissaoFinal, Page, PageSize |
+| `POST` | `/v1/compras/ordemcompra/{ordemCompraId}/item` | Cadastrar Item | `ordemCompraId`(path) |
+| `GET` | `/v1/compras/ordemcompra/{ordemCompraId}/item` | Listar Itens | `ordemCompraId`(path), Page, PageSize |
+| `POST` | `/v1/compras/ordemcompra/{ordemCompraId}/parcela` | Cadastrar Parcela | `ordemCompraId`(path) |
+| `GET` | `/v1/compras/ordemcompra/{ordemCompraId}/parcela` | Listar Parcelas | `ordemCompraId`(path), Page, PageSize |
+| `POST` | `/v1/compras/ordemcompra/{ordemCompraId}/cancelar` | Cancelar | `ordemCompraId`(path) |
+
+**`POST` Cadastrar — body fields:** `empresaId`, `status`, `emissao`, `fornecedorId`, `funcionarioId`, `freteId`, `condicaoPagamentoId`, `transportadorId`, `tipoOrdemCompraId`, `clienteId`, `contatoId`, `contatoDigitado`, `solicitanteId`, `moedaId`, `contratoId`, `contratoFornecedorId`, `projetoExecucaoId`, `projetoExecucaoItemId`, `unidadeNegocioId`, `grupoEconomicoId`
+
+**`POST` Cadastrar Item — body fields:** `produtoId`, `unidadeId`, `quantidade`, `quantidadeComprada`, `valorUnitario`, `operacaoFiscalId`, `moedaId`, `referenciaFabricante`, `codigoProdutoFornecedor`, `descricaoLivre`, `cotacaoMoeda`, `valorDesconto`, `aliquotaICMS`, `valorICMS`, `aliquotaIcmsSt`, `aliquotaMva`, `valorICMSST`, `aliquotaIPI`, `valorIPI`, `aliquotaPis`
+
+**`POST` Cadastrar Parcela — body fields:** `vencimento`, `valor`, `condicaoPagamentoId`
+
+**`POST` Cancelar — body fields:** `motivoCancelamento`
 
 ---
 
 ### Ordens de Produção
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/pcpproducao/tipoordemproducao` | Listar Tipos |
-| POST | `/v1/pcpproducao/ordemproducao` | Cadastrar |
-| GET | `/v1/pcpproducao/ordemproducao` | Listar |
-| GET | `/v1/pcpproducao/ordemproducao/{id}` | Obter por ID |
-| PUT | `/v1/pcpproducao/ordemproducao/{id}` | Atualizar |
-| POST | `/v1/pcpproducao/ordemproducao/{id}/cancelar` | Cancelar |
-| POST | `/v1/pcpproducao/ordemproducao/{id}/finalizar` | Finalizar |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/pcpproducao/tipoordemproducao` | Listar Tipos | Id, Nome, Page, PageSize |
+| `POST` | `/v1/pcpproducao/ordemproducao` | Cadastrar | — |
+| `GET` | `/v1/pcpproducao/ordemproducao` | Listar | Id, TipoOrdemProducaoId, StatusFluxoId, ProdutoId, PedidoId, Status, Page, PageSize |
+| `GET` | `/v1/pcpproducao/ordemproducao/{id}` | Obter | `id`(path) |
+| `POST` | `/v1/pcpproducao/ordemproducao/{ordemProducaoId}/item` | Cadastrar Item | `ordemProducaoId`(path) |
+| `GET` | `/v1/pcpproducao/ordemproducao/{ordemProducaoId}/item` | Listar Itens | `ordemProducaoId`(path), Page, PageSize |
+| `PATCH` | `/v1/pcpproducao/ordemproducao/{ordemProducaoId}/statusfluxo` | Alterar Status (Fluxo) | `ordemProducaoId`(path) |
+| `POST` | `/v1/pcpproducao/ordemproducao/{ordemProducaoId}/cancelar` | Cancelar | `ordemProducaoId`(path) |
+
+**`POST` Cadastrar — body fields:** `tipoOrdemProducaoId`, `produtoId`, `estabelecimentoId`, `destinoEstoqueId`, `usuarioId`, `quantidade`, `emissao`, `inicio`, `vencimento`, `statusFluxoId`, `status`, `gerarNotaRemessa`, `centroCustoId`, `pedidoId`, `clienteId`, `quantidadeNecessaria`, `versao`, `encerramento`, `projetoId`, `etapaId`
+
+**`POST` Cadastrar Item — body fields:** `tipoComposicao`, `descricao`, `produtoId`, `localEstoqueId`, `recursoId`, `componenteId`, `servicoId`, `quantidade`, `quantidadeEngenharia`, `indicePerda`, `custo`
+
+**`PATCH` Alterar Status (Fluxo) — body fields:** `statusFluxoId`
+
+**`POST` Cancelar — body fields:** `json`
 
 ---
 
-### Ordens de Serviço (Assist. Técnica)
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/assistenciatecnica/ordemservico` | Cadastrar |
-| GET | `/v1/assistenciatecnica/ordemservico` | Listar |
-| GET | `/v1/assistenciatecnica/ordemservico/{id}` | Obter por ID |
-| PUT | `/v1/assistenciatecnica/ordemservico/{id}` | Atualizar |
-| POST | `/v1/assistenciatecnica/ordemservico/{id}/cancelar` | Cancelar |
-| POST | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/apontamentohora` | Apontar Horas |
-| GET | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/apontamentohora` | Listar Apontamentos |
-| POST | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/equipamento` | Cadastrar Equipamento |
-| GET | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/equipamento` | Listar Equipamentos |
-| POST | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/servico` | Cadastrar Serviço |
-| GET | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/servico` | Listar Serviços |
-| POST | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/produto` | Cadastrar Produto |
-| GET | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/produto` | Listar Produtos |
+### Ordens de Serviço — Assist. Técnica
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar | — |
+| `GET` | `/v1/assistenciatecnica/ordemservico` | Listar | Id, ClienteId, ResponsavelTecnicoId, TipoId, EmissaoInicial, EmissaoFinal, DataAtualizacaoInicial, D |
+| `PUT` | `_see description_` | Editar | `id`(path) |
+| `GET` | `/v1/assistenciatecnica/ordemservicocompleta` | Listar Completa | Id, ClienteId, ResponsavelTecnicoId, TipoId, EmissaoInicial, EmissaoFinal, DataAtualizacaoInicial, D |
+| `PATCH` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/statusfluxo` | Alterar Status (Fluxo) | `ordemServicoId`(path) |
+| `POST` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/anexo` | Cadastrar Anexo | `ordemServicoId`(path) |
+| `GET` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/anexo` | Listar Anexos | `ordemServicoId`(path), Page, PageSize |
+| `GET` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/anexo/{anexoId}` | Obter Anexo | `ordemServicoId`(path), `anexoId`(path) |
+| `GET` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/equipamento` | Listar Equipamentos | `ordemServicoId`(path), Page, PageSize |
+| `POST` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/equipamento` | Cadastrar Equipamento | `ordemServicoId`(path) |
+| `GET` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/manutencao` | Listar Manutenções | `ordemServicoId`(path), Page, PageSize |
+| `POST` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/manutencao` | Cadastrar Manutenção | `ordemServicoId`(path) |
+| `GET` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/produto` | Listar Itens Produtos | `ordemServicoId`(path), EstaExcluido, Id, Nome, Page, PageSize |
+| `POST` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/produto` | Cadastrar Item Produto | `ordemServicoId`(path) |
+| `PATCH` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/produto/{ordemServicoItemId}` | Editar Item Produto | `ordemServicoId`(path), `ordemServicoItemId`(path) |
+| `DELETE` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/produto/{ordemServicoItemId}` | Remover Item Produto | `ordemServicoId`(path), `ordemServicoItemId`(path) |
+| `GET` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/servico` | Listar Itens Serviços | `ordemServicoId`(path), Page, PageSize |
+| `POST` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/servico` | Cadastrar Item Serviço | `ordemServicoId`(path) |
+| `PATCH` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/servico/{ordemServicoItemId}` | Editar Item Serviço | `ordemServicoId`(path), `ordemServicoItemId`(path) |
+| `DELETE` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/servico/{ordemServicoItemId}` | Remover Item Serviço | `ordemServicoId`(path), `ordemServicoItemId`(path) |
+| `POST` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/apontamentohora` | Cadastrar Apontamentos de Hora | `ordemServicoId`(path) |
+| `GET` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/apontamentohora` | Listar Apontamentos de Hora | `ordemServicoId`(path), Page, PageSize |
+| `POST` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/checklistresposta` | Cadastrar Respostas da Checklist | `ordemServicoId`(path) |
+| `GET` | `/v1/assistenciatecnica/ordemservico/{ordemServicoId}/checklistpergunta` | Listar Perguntas da Checklist | `ordemServicoId`(path), Page, PageSize |
+| `GET` | `/v1/assistenciatecnica/ordemservico/checklistcompleta` | Listar Perguntas da ChecklistCompleta | Page, PageSize |
+| `POST` | `/v1/assistenciatecnica/ordemservico/situacao` | Cadastrar Situação | — |
+| `GET` | `/v1/assistenciatecnica/ordemservico/situacao` | Listar Situações | Id, Nome, Page, PageSize |
+
+**`POST` Cadastrar — body fields:** `tipoId`, `clienteId`, `emissao`, `dataEntregaPrevista`, `dataEntrega`, `condicaoPagamentoId`, `funcionarioId`, `numeroSequencia`, `dataFaturamento`, `enderecoEntregaId`, `enderecoRetiradaId`, `responsavelId`, `revendaContratoId`, `projetoId`, `slaId`, `tipoAtendimentoId`, `modalidadeAtendimentoId`, `origemId`, `contato`, `situacaoId`
+
+**`PUT` Editar — body fields:** `tipoId`, `clienteId`, `emissao`, `dataEntregaPrevista`, `dataEntrega`, `condicaoPagamentoId`, `funcionarioId`, `numeroSequencia`, `dataFaturamento`, `enderecoEntregaId`, `enderecoRetiradaId`, `responsavelId`, `revendaContratoId`, `projetoId`, `slaId`, `tipoAtendimentoId`, `modalidadeAtendimentoId`, `origemId`, `contato`, `situacaoId`
+
+**`PATCH` Alterar Status (Fluxo) — body fields:** `statusFluxoId`
+
+**`POST` Cadastrar Anexo — body fields:** `nome`, `arquivo`
+
+**`POST` Cadastrar Equipamento — body fields:** `equipamentoId`, `equipamentoProdutoId`, `horimetro`, `dataHorimetro`, `horimetroDois`, `dataHorimetroDois`, `horimetroTres`, `dataHorimetroTres`, `box`, `numeroSerie`, `numeroFrota`, `dataInstalacao`, `diasGarantia`, `anoFabricacao`, `torre`, `marcaId`, `defeitoId`, `tecnicoId`, `problemaId`, `causaProblemaId`
+
+**`POST` Cadastrar Manutenção — body fields:** `veiculoPessoaId`, `motoristaNome`, `kmAtual`, `box`, `dataUltimaTrocaOleo`, `kmUltimaTroca`, `kmRodado`, `quantidadeCombustivel`, `condicaoEntrada`, `dataProximaTrocaOleo`, `avisoAntecedenciaTrocaOleo`, `observacoesTrocaOleo`, `dataProximaRevisao`, `avisoAntecedencia`, `observacoesRevisao`, `observacao`, `avarias`, `defeitos`, `laudo`, `recarregarEquipamento`
+
+**`POST` Cadastrar Item Produto — body fields:** `produtoId`, `quantidade`, `valorUnitario`, `valorTotal`, `id`, `valorUnitarioDesconto`, `percentualDesconto`, `valorDesconto`, `descricaoDetalhadaNfe`, `destinoEstoqueId`, `situacaoItemId`, `observacaoInterna`, `observacao`
+
+**`PATCH` Editar Item Produto — body fields:** `produtoId`, `quantidade`, `valorUnitario`, `valorTotal`, `valorUnitarioDesconto`, `percentualDesconto`, `valorDesconto`, `descricaoDetalhadaNfe`, `destinoEstoqueId`, `situacaoItemId`, `observacaoInterna`, `observacao`
+
+**`POST` Cadastrar Item Serviço — body fields:** `servicoId`, `quantidade`, `valorUnitario`, `valorTotal`, `id`, `quantidadeHora`, `valorUnitarioDesconto`, `percentualDesconto`, `valorDesconto`, `descricaoDetalhadaNfe`, `responsavelTecnicoId`, `destinoEstoqueId`, `situacaoItemId`, `observacaoInterna`, `observacao`
+
+**`PATCH` Editar Item Serviço — body fields:** `servicoId`, `quantidade`, `valorUnitario`, `valorTotal`, `valorUnitarioDesconto`, `percentualDesconto`, `valorDesconto`, `descricaoDetalhadaNfe`, `destinoEstoqueId`, `situacaoItemId`, `observacaoInterna`, `observacao`, `responsavelTecnicoId`
+
+**`POST` Cadastrar Apontamentos de Hora — body fields:** `servicoId`, `funcionarioId`, `horaInicio`, `horaFim`, `totalHoras`, `descricaoServico`, `data`, `id`, `observacao`
+
+**`POST` Cadastrar Respostas da Checklist — body fields:** `checklistPerguntaExecucaoRelacionadaId`, `observacao`, `avaliacaoNota`
+
+**`POST` Cadastrar Situação — body fields:** `nome`
 
 ---
 
-### Ordens de Serviço (Faturamento)
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/faturamento/ordemservico` | Cadastrar |
-| GET | `/v1/faturamento/ordemservico` | Listar |
-| GET | `/v1/faturamento/ordemservico/{id}` | Obter por ID |
-| PUT | `/v1/faturamento/ordemservico/{id}` | Atualizar |
-| POST | `/v1/faturamento/ordemservico/{id}/cancelar` | Cancelar |
+### Ordens de Serviço — Faturamento
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/faturamento/ordemservico` | Cadastrar | — |
+| `GET` | `/v1/faturamento/ordemservico` | Listar | Id, ClienteId, TipoId, EmissaoInicial, EmissaoFinal, Status, Page, PageSize |
+
+**`POST` Cadastrar — body fields:** `empresaId`, `clienteId`, `contatoPessoaId`, `emissao`, `dataLancamento`, `dataEntrega`, `dataEntregaPrevista`, `situacaoId`, `condicaoPagamentoId`, `municipioPrestacaoId`, `funcionarioId`, `responsavelTecnicoId`, `projetoExecucaoId`, `grupoEconomicoId`, `tipoId`, `veiculoManutencaoId`, `kmAtual`, `status`, `indicadorPresencaComprador`, `numeroSequencia`
 
 ---
 
-### Pedidos (Fat. Direto)
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/faturamento/pedidodiretofaturamento` | Cadastrar |
-| GET | `/v1/faturamento/pedidodiretofaturamento` | Listar |
-| GET | `/v1/faturamento/pedidodiretofaturamento/{id}` | Obter por ID |
+### Pedidos — Faturamento Direto
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/faturamento/pedidodireto/{pedidoId}/item` | Listar Itens | `pedidoId`(path), Page, PageSize |
+| `GET` | `/v1/faturamento/pedidodireto/{pedidoId}/servico` | Listar Serviços | `pedidoId`(path), Page, PageSize |
+| `GET` | `/v1/faturamento/pedidodireto/{pedidoId}/parcela` | Listar Parcelas | `pedidoId`(path), Page, PageSize |
 
 ---
 
-### Pedidos (Padrão)
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/faturamento/pedido` | Cadastrar |
-| GET | `/v1/faturamento/pedido` | Listar |
-| GET | `/v1/faturamento/pedido/{id}` | Obter por ID |
-| PUT | `/v1/faturamento/pedido/{id}` | Atualizar |
-| POST | `/v1/faturamento/pedido/{id}/cancelar` | Cancelar |
-| POST | `/v1/faturamento/pedido/{id}/duplicar` | Duplicar |
-| POST | `/v1/faturamento/pedido/{id}/faturar` | Faturar |
-| GET | `/v1/faturamento/pedido/{pedidoId}/item` | Listar Itens |
+### Pedidos — Padrão
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/faturamento/pedidopadrao` | Cadastrar Pedido | — |
+| `GET` | `/v1/faturamento/pedidopadrao/{pedidoId}/item` | Listar Itens | `pedidoId`(path), Page, PageSize |
+| `GET` | `/v1/faturamento/pedidopadrao/{pedidoId}/volume` | Listar Volumes | `pedidoId`(path), Page, PageSize |
+| `POST` | `/v1/faturamento/pedidopadrao/{pedidoId}/volume` | Cadastrar Volume | `pedidoId`(path) |
+| `POST` | `/v1/faturamento/pedidopadrao/{pedidoId}/volume/gerar` | Gerar Etiqueta | `pedidoId`(path) |
+| `POST` | `/v1/faturamento/pedidopadrao/{pedidoId}/item/embalar` | Embalar Item | `pedidoId`(path) |
+
+**`POST` Cadastrar Pedido — body fields:** `tipoPedidoCadastroId`, `clienteId`, `condicaoPagamentoId`, `moedaId`, `emissao`, `dataFaturamento`, `contratoId`, `dataLancamento`, `contatoPessoaId`, `contato`, `funcionarioId`, `freteId`, `portadorId`, `operacaoFiscalId`, `projetoOrcamentoCrmId`, `cotacaoMoeda`, `observacao`
+
+**`POST` Cadastrar Volume — body fields:** `volumeId`, `peso`, `pesoCadastro`
+
+**`POST` Gerar Etiqueta — body fields:** `volumeId`, `quantidade`, `numeroInicial`
+
+**`POST` Embalar Item — body fields:** `volumeCodigoBarras`, `produtoId`
 
 ---
 
-### Pedidos (Rápido)
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/faturamento/pedido/rapido` | Cadastrar Rápido |
-| GET | `/v1/faturamento/pedido/rapido` | Listar |
-| GET | `/v1/faturamento/pedido/rapido/{id}` | Obter por ID |
-| POST | `/v1/faturamento/pedido/rapido/{id}/cancelar` | Cancelar |
-| POST | `/v1/faturamento/pedido/rapido/{id}/faturar` | Faturar |
-| POST | `/v1/faturamento/pedido/notafiscal/devolucao` | Devolução NF Venda |
-| POST | `/v1/faturamento/pedido/desmontar` | Desmontar Pedido |
-| GET | `/v1/faturamento/pedido/capacidadeseparacao` | Capacidade de Separação |
+### Pedidos — Rápido
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar Pedido | — |
+| `GET` | `/v1/faturamento/pedido` | Listar Pedidos | Id, of, ClienteId, TipoId, DataEmissaoInicial, DataEmissaoFinal, Status, StatusLancamentoNome, of, C |
+| `PATCH` | `/v1/faturamento/pedido/{id}` | Editar Pedido | `id`(path) |
+| `POST` | `/v1/faturamento/pedido/{pedidoId}/servico` | Cadastrar Serviço | `pedidoId`(path) |
+| `GET` | `/v1/faturamento/pedido/{pedidoId}/servico` | Listar Serviços | `pedidoId`(path), Page, PageSize |
+| `POST` | `/v1/faturamento/pedido/{pedidoId}/produto` | Cadastrar Produto | `pedidoId`(path) |
+| `GET` | `/v1/faturamento/pedido/{pedidoId}/produto` | Listar Produtos | `pedidoId`(path), Page, PageSize |
+| `POST` | `/v1/faturamento/pedido/{pedidoId}/parcela/gerar` | Gerar Parcelas | `pedidoId`(path) |
+| `POST` | `/v1/faturamento/pedido/{pedidoId}/parcela` | Cadastrar Parcela | `pedidoId`(path) |
+| `GET` | `/v1/faturamento/pedido/{pedidoId}/parcela` | Listar Parcelas | `pedidoId`(path), Page, PageSize |
+| `PATCH` | `/v1/faturamento/pedido/{pedidoId}/statusfluxo` | Alterar Status (Fluxo) do Pedido | `pedidoId`(path) |
+| `POST` | `/v1/faturamento/pedido/{pedidoId}/gerarordemproducao` | Gerar Ordem de Produção | `pedidoId`(path) |
+| `POST` | `/v1/faturamento/pedido/{pedidoId}/faturarnotafiscal` | Faturar Nota Fiscal | `pedidoId`(path) |
+| `POST` | `/v1/faturamento/pedido/{pedidoId}/simplesfatura` | Faturar Simples Fatura | `pedidoId`(path) |
+| `POST` | `/v1/faturamento/pedido/{pedidoId}/cancelar` | Cancelar | `pedidoId`(path) |
+| `POST` | `/v1/faturamento/pedido/{pedidoId}/anexo` | Cadastrar Anexo | `pedidoId`(path) |
+| `GET` | `/v1/faturamento/pedido/{pedidoId}/anexo` | Listar Anexos | `pedidoId`(path), Page, PageSize |
+| `GET` | `/v1/faturamento/pedido/{pedidoId}/anexo/{anexoId}` | Obter Anexo | `pedidoId`(path), `anexoId`(path) |
+| `GET` | `/v1/faturamento/pedido/{pedidoId}/danfe` | Imprimir Danfe | `pedidoId`(path), Temp |
+| `GET` | `/v1/faturamento/pedido/danfe/vinculada` | Imprimir Danfe (Vinculadas) | Id, CodigoMarketPlace, Temp, Page, PageSize |
+| `GET` | `/v1/faturamento/pedido/danfe/boleto/vinculada` | Imprimir Danfe/Boletos (Vinculados) | Id, CodigoMarketPlace, Temp, Page, PageSize |
+| `POST` | `/v1/faturamento/pedido/notafiscal/devolucao` | Devolução Nota Fiscal (Venda) | — |
+| `POST` | `/v1/faturamento/pedido/desmontar` | Desmontar Pedido | — |
+| `GET` | `/v1/faturamento/pedido/capacidadeseparacao` | Consultar Capacidade de Separação | EmpresaId, DataInicial, DataFinal, Page, PageSize |
+
+**`POST` Cadastrar Pedido — body fields:** `empresaId`, `condicaoPagamentoId`, `tipoId`, `dataEmissao`, `clienteId`, `cliente`, `produtos`, `servicos`, `parcelas`, `comissoes`, `gerarNfFutura`, `freteId`, `valorFrete`, `transportadorId`, `quantidadeVolume`, `pesoLiquido`, `pesoBruto`, `vendedorId`, `destinatarioId`, `orcamentoCrmId`
+
+**`PATCH` Editar Pedido — body fields:** `condicaoPagamentoId`, `transportadorId`, `quantidadeVolume`, `pesoLiquido`, `pesoBruto`
+
+**`POST` Cadastrar Serviço — body fields:** `servicoId`, `quantidade`, `valorUnitario`, `valorTotal`, `valorDesconto`, `percentualDesconto`, `dataEntrega`, `observacao`
+
+**`POST` Cadastrar Produto — body fields:** `produtoId`, `produto`, `quantidade`, `valorUnitario`, `valorTotal`, `classificacaoId`, `destinoEstoqueId`, `contratoId`, `valorDesconto`, `valorUnitarioDesconto`, `numeroItemPedido`, `codigoPedido`, `percentualDesconto`, `percentualComissao`, `dataEntrega`, `observacao`, `insumosProducao`
+
+**`POST` Gerar Parcelas — body fields:** `condicaoPagamentoId`, `valor`, `dataTransacao`, `autenticacao`, `autorizacaoCartao`, `nsu`
+
+**`POST` Cadastrar Parcela — body fields:** `condicaoPagamentoId`, `vencimento`, `valor`, `autenticacao`, `autorizacaoCartao`, `nsu`, `observacao`
+
+**`PATCH` Alterar Status (Fluxo) do Pedido — body fields:** `statusFluxoId`
+
+**`POST` Gerar Ordem de Produção — body fields:** `json`
+
+**`POST` Faturar Nota Fiscal — body fields:** `json`
+
+**`POST` Faturar Simples Fatura — body fields:** `json`
+
+**`POST` Cancelar — body fields:** `motivo`
+
+**`POST` Cadastrar Anexo — body fields:** `nome`, `arquivo`
+
+**`POST` Devolução Nota Fiscal (Venda) — body fields:** `tipoDocumentoId`, `id`, `codigoMarketPlace`
+
+**`POST` Desmontar Pedido — body fields:** `destinoEstoqueId`, `id`, `codigoMarketPlace`
 
 ---
 
 ### Plano de Contas
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/financeiro/planodeconta` | Listar |
-| GET | `/v1/financeiro/planodeconta/{id}` | Obter por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/contabil/planoconta` | Listar | EhContaCaixa, Id, Nome, Page, PageSize |
+| `GET` | `/v1/contabil/saldoconta` | Consultar Saldo Atual | ContaContabilIds, of, EmpresaGrupoId |
 
 ---
 
 ### Produtos
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/configuracoes/produto` | Cadastrar |
-| GET | `/v1/configuracoes/produto` | Listar |
-| GET | `/v1/configuracoes/produto/{id}` | Obter por ID |
-| PUT | `/v1/configuracoes/produto/{id}` | Atualizar |
-| GET | `/v1/configuracoes/produto/{produtoId}/preco` | Listar Preços |
-| POST | `/v1/configuracoes/produto/{produtoId}/preco` | Cadastrar Preço |
-| PUT | `/v1/configuracoes/produto/{produtoId}/preco/{id}` | Atualizar Preço |
-| GET | `/v1/configuracoes/produto/{produtoId}/complemento` | Obter Complemento |
-| PUT | `/v1/configuracoes/produto/{produtoId}/complemento` | Atualizar Complemento |
-| GET | `/v1/configuracoes/produto/{produtoId}/imagem` | Listar Imagens |
-| POST | `/v1/configuracoes/produto/{produtoId}/imagem` | Cadastrar Imagem |
-| DELETE | `/v1/configuracoes/produto/{produtoId}/imagem/{id}` | Excluir Imagem |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar Produto | — |
+| `GET` | `/v1/estoque/produto` | Listar Produtos | Id, Nome, Apelido, CodigoIdentificacaoInterno, CodigoBarras, AtivoEcommerce, Kit, Ids, of, IdsIntern |
+| `PATCH` | `/v1/estoque/produto/{id}` | Editar | `id`(path) |
+| `GET` | `/v1/estoque/produto/{produtoId}/imagem` | Listar Imagens Produto | `produtoId`(path) |
+| `GET` | `/v1/estoque/produto/{produtoId}/composicao` | Listar Composições Produto | `produtoId`(path), Page, PageSize |
+| `GET` | `/v1/estoque/unidade` | Listar Unidades | Id, Nome, Page, PageSize |
+| `GET` | `/v1/estoque/grupo` | Listar Grupos | Id, Nome, Mobile, Page, PageSize |
+| `GET` | `/v1/estoque/familia` | Listar Famílias | Id, Nome, Page, PageSize |
+| `GET` | `/v1/estoque/marca` | Listar Marcas | ExibeOS, ExibePedido, Propria, Id, Nome, Page, PageSize |
+| `GET` | `/v1/estoque/categoria` | Listar Categorias | CategoriaPaiId, Id, Nome, Page, PageSize |
+| `GET` | `/v1/estoque/categoria/{id}` | Obter Categoria | `id`(path) |
+| `GET` | `/v1/estoque/sugestaocompra` | Consulta Sugestão de Compra | EstoqueDias, EstabelecimentoGerar, Estabelecimentos, of, UltimosDias, DataInicial, DataFinal, Codigo |
+| `POST` | `/v1/pcpproducao/desmontagemproduto` | Desmontar Produto | — |
+| `GET` | `/v1/pcpproducao/desmontagemproduto` | Listar Desmontagens | Id, ProdutoId, Status, Page, PageSize |
+
+**`POST` Cadastrar Produto — body fields:** `nome`, `apelido`, `ncm`, `codigoTipoSped`, `precoVenda`, `unidadeId`, `familiaId`, `grupoEstoqueId`, `tipoPeso`, `precoVendaMinimo`, `percentualComissao`, `lucroEstimado`, `lucroEstimadoMinimo`, `lucroEstimadoAlocado`, `percentualDescontoMaximo`, `potencia`, `modeloResumido`, `configuracaoMarketplaceId`, `codigoMarketPlace`, `origem`
+
+**`PATCH` Editar — body fields:** `precoVenda`, `precoVendaMinimo`, `custoFornecedor`, `fornecedorId`, `codigoIdentificacaoInterno`, `nome`, `apelido`
+
+**`POST` Desmontar Produto — body fields:** `produtoId`, `estabelecimentoId`, `localEstoqueId`, `usuarioId`, `quantidade`, `inicio`, `encerramento`, `ordemProducaoId`, `statusFluxoId`, `centroCustoId`, `clienteId`, `observacao`
 
 ---
 
 ### Projetos
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/projetos/projeto` | Cadastrar |
-| GET | `/v1/projetos/projeto` | Listar |
-| GET | `/v1/projetos/projeto/{id}` | Obter por ID |
-| PUT | `/v1/projetos/projeto/{id}` | Atualizar |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/projetos/projetoexecucao` | Listar | ClienteId, EstabelecimentoId, Descricao, Status, EstaExcluido, Page, PageSize |
+| `GET` | `/v1/projetos/etapa` | Listar Etapas | ProjetoId, Nome, Page, PageSize |
 
 ---
 
 ### Serviços LC-116
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/fiscal/servicolc116` | Listar |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/estoque/servicoleicomplementar` | Listar | Id, Nome, Codigo, Page, PageSize |
 
 ---
 
 ### Serviços Prestados
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/fiscal/nfse/servicoprestado` | Cadastrar |
-| GET | `/v1/fiscal/nfse/servicoprestado` | Listar |
-| GET | `/v1/fiscal/nfse/servicoprestado/{id}` | Obter por ID |
-| POST | `/v1/fiscal/nfse/servicoprestado/{id}/faturar` | Faturar |
-| POST | `/v1/fiscal/nfse/servicoprestado/{id}/cancelar` | Cancelar |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/estoque/servico` | Cadastrar | — |
+| `GET` | `/v1/estoque/servico` | Listar | Id, Nome, Apelido, CodigoIdentificacaoInterno, MarcaId, FamiliaId, ExibeOs, Page, PageSize |
+
+**`POST` Cadastrar — body fields:** `nome`, `apelido`, `ncm`, `unidadeId`, `familiaId`, `precoVenda`, `precoVendaMinimo`, `estabelecimentoFaturamentoId`, `codigoIdentificacaoInterno`, `codigoEspecificadorCEST`, `grupoEstoqueId`, `codigoGenero`, `codigoTipoSped`, `marcaId`, `listaServicoId`, `tecnicoRecebeComissao`, `controlaComissaoSupervisor`, `bloqueiaLancamentoProjeto`, `tributacaoNfse`, `cnae`
 
 ---
 
 ### Serviços Tomados
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/fiscal/nfse/servicotomado` | Cadastrar |
-| GET | `/v1/fiscal/nfse/servicotomado` | Listar |
-| GET | `/v1/fiscal/nfse/servicotomado/{id}` | Obter por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/estoque/servicotomado` | Cadastrar | — |
+| `GET` | `/v1/estoque/servicotomado` | Listar | Id, Nome, Apelido, CodigoIdentificacaoInterno, MarcaId, FamiliaId, ExibeOs, Page, PageSize |
+
+**`POST` Cadastrar — body fields:** `nome`, `apelido`, `ncm`, `unidadeId`, `familiaId`, `listaServicoId`, `precoVenda`, `precoVendaMinimo`, `estabelecimentoFaturamentoId`, `codigoIdentificacaoInterno`, `codigoEspecificadorCEST`, `grupoEstoqueId`, `codigoGenero`, `codigoTipoSped`, `marcaId`, `tecnicoRecebeComissao`, `controlaComissaoSupervisor`, `bloqueiaLancamentoProjeto`, `tributacaoNfse`, `cnae`
 
 ---
 
 ### Status (Fluxo)
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/configuracoes/status` | Listar |
-| GET | `/v1/configuracoes/status/{id}` | Obter por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/faturamento/status` | Listar | Id, Nome, Page, PageSize |
 
 ---
 
 ### Tabelas de Preço
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/configuracoes/tabelapreco` | Listar |
-| GET | `/v1/configuracoes/tabelapreco/{id}` | Obter por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/faturamento/tabelapreco` | Cadastrar Tabela de Preço | — |
+| `GET` | `/v1/faturamento/tabelapreco` | Listar Tabela de Preços | Id, Nome, Page, PageSize |
+| `POST` | `/v1/faturamento/tabelapreco/{tabelaPrecoId}/item` | Cadastrar Item | `tabelaPrecoId`(path) |
+| `GET` | `/v1/faturamento/tabelapreco/{tabelaPrecoId}/item` | Listar Itens | `tabelaPrecoId`(path), ProdutoId, CodigoIdentificacaoInterno, Page, PageSize |
+
+**`POST` Cadastrar Tabela de Preço — body fields:** `nome`, `empresaGrupoId`, `percentualComissao`, `percentualAcrescimo`, `percentualDesconto`, `calcularPesoLiquido`, `mobile`, `codigoImportacao`, `observacao`
+
+**`POST` Cadastrar Item — body fields:** `condicaoPagamentoId`, `valor`, `produtoId`, `categoriaId`, `valorMinimo`, `percentualDescontoMaximo`, `margem`
 
 ---
 
-### Tipo Ações
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/configuracoes/tipoacao` | Listar |
+### Tipo de Ações
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/crm/tipoacao` | Listar | Id, Nome, Page, PageSize |
 
 ---
 
-### Tipo Ordens de Serviço
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/configuracoes/tipoordemservico` | Listar |
+### Tipo Ordens de Servico
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/faturamento/tipoordemservico` | Listar | Id, Nome, Mobile, Page, PageSize |
 
 ---
 
 ### Tipos de Pedidos
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/faturamento/tipopedido` | Listar |
-| GET | `/v1/faturamento/tipopedido/{id}` | Obter por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/faturamento/tipopedido` | Listar | Id, Nome, Page, PageSize |
 
 ---
 
 ### Tipos de Pessoas
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/configuracoes/tipopessoa` | Listar |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/configuracoes/tipopessoa` | Listar | Id, Nome, Page, PageSize |
 
 ---
 
 ### Transportadores
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/configuracoes/transportador` | Listar |
-| GET | `/v1/configuracoes/transportador/{id}` | Obter por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar | — |
+| `GET` | `/v1/configuracoes/transportador` | Listar | Id, RazaoSocial, Fantasia, CpfCnpj, DataAtualizacaoInicial, DataAtualizacaoFinal, Page, PageSize |
+| `GET` | `/v1/configuracoes/transportador/{id}` | Obter | `id`(path) |
+| `GET` | `/v1/configuracoes/transportador/{transportadorId}/endereco` | Listar Endereços | `transportadorId`(path), TipoEndereco, Cep, DataAtualizacaoInicial, DataAtualizacaoFinal, Page, Page |
+
+**`POST` Cadastrar — body fields:** `tipoPessoaId`, `classificacaoId`, `cpfCnpj`, `razaoSocial`, `cep`, `logradouro`, `numero`, `bairroId`, `bairroNome`, `municipioId`, `municipioNome`, `uf`, `municipioIbge`, `fantasia`, `complemento`, `letra`, `apelido`, `tipoContribuinte`, `regimeTributario`, `operacaoConsumidorNFe`
 
 ---
 
 ### Usuarios
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/utilitarios/usuario` | Listar |
-| GET | `/v1/utilitarios/usuario/{id}` | Obter por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/configuracoes/usuario` | Listar | Login, PessoaId, Administrador, Id, Nome, Page, PageSize |
+| `GET` | `/v1/configuracoes/usuario/{id}/estabelecimento` | Listar Usuario Estabelecimentos | `id`(path), Page, PageSize |
 
 ---
 
 ### Utilitários
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/utilitarios/empresa` | Listar Empresas |
-| GET | `/v1/utilitarios/empresa/{id}` | Obter Empresa por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `GET` | `/v1/utilitarios/consultacnpj` | Consulta CNPJ | Cnpj, SecurityKey |
+| `GET` | `/v1/utilitarios/atualizarlicenca` | Atualizar Licenca | — |
 
 ---
 
 ### Veículos
-| Method | Path | Summary |
-|--------|------|---------|
-| POST | `/v1/configuracoes/veiculo` | Cadastrar |
-| GET | `/v1/configuracoes/veiculo` | Listar |
-| GET | `/v1/configuracoes/veiculo/{id}` | Obter por ID |
-| PUT | `/v1/configuracoes/veiculo/{id}` | Atualizar |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/configuracoes/veiculo` | Cadastrar | — |
+| `GET` | `/v1/configuracoes/veiculo` | Listar | Placa, UF, EmpresaGrupoId, ProprietarioId, MotoristaId, TipoVeiculoId, VeiculoFipeId, Especie, Chass |
+
+**`POST` Cadastrar — body fields:** `nome`, `placa`, `uf`, `proprietarioId`, `anoFabricacao`, `anoModelo`, `combustivel`, `tipoCarroceira`, `tipoRodado`, `combinacaoVeicular`, `empresaGrupoId`, `motoristaId`, `gestorId`, `centroCustoId`, `tipoVeiculoId`, `veiculoFipeId`, `marcaModelo`, `especie`, `chassi`, `renavam`
 
 ---
 
 ### Vendedores
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/configuracoes/vendedor` | Listar |
-| GET | `/v1/configuracoes/vendedor/{id}` | Obter por ID |
+
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `_see description_` | Cadastrar | — |
+| `GET` | `/v1/configuracoes/vendedor` | Listar | Id, RazaoSocial, Fantasia, CpfCnpj, DataAtualizacaoInicial, DataAtualizacaoFinal, Page, PageSize |
+| `GET` | `/v1/configuracoes/vendedor/{id}` | Obter | `id`(path) |
+| `GET` | `/v1/configuracoes/vendedor/{vendedorId}/endereco` | Listar Endereços | `vendedorId`(path), TipoEndereco, Cep, DataAtualizacaoInicial, DataAtualizacaoFinal, Page, PageSize |
+
+**`POST` Cadastrar — body fields:** `tipoPessoaId`, `classificacaoId`, `cpfCnpj`, `razaoSocial`, `cep`, `logradouro`, `numero`, `bairroId`, `bairroNome`, `municipioId`, `municipioNome`, `uf`, `municipioIbge`, `fantasia`, `complemento`, `letra`, `apelido`, `tipoContribuinte`, `regimeTributario`, `operacaoConsumidorNFe`
 
 ---
 
 ### Volumes
-| Method | Path | Summary |
-|--------|------|---------|
-| GET | `/v1/configuracoes/volume` | Listar |
 
----
+| Method | Path | Summary | Params |
+|--------|------|---------|--------|
+| `POST` | `/v1/configuracoes/volume` | Cadastrar | — |
+| `GET` | `/v1/configuracoes/volume` | Listar | Peso, Id, Nome, Page, PageSize |
 
-## Key Request Schemas
-
-### `AuthRequestDto`
-| Field | Type | Required |
-|-------|------|----------|
-| tenant | string | ✅ |
-| username | string | ✅ |
-| password | string | ✅ |
-| company | int32 | ✅ |
-| domain | string | ❌ |
-
----
-
-### `ClienteRequestDto` / `FornecedorRequestDto`
-| Field | Type | Required |
-|-------|------|----------|
-| tipoPessoaId | int32 | ✅ |
-| classificacaoId | int32 | ✅ |
-| cpfCnpj | string | ✅ |
-| razaoSocial | string | ✅ |
-| cep | string | ✅ |
-| logradouro | string | ✅ |
-| numero | string | ✅ |
-| bairroId | int32 | ❌ |
-| bairroNome | string | ❌ |
-| municipioId | int32 | ❌ |
-| municipioNome | string | ❌ |
-| uf | string | ❌ |
-| fantasia | string | ❌ |
-| complemento | string | ❌ |
-| tabelaPrecoId | int32 | ❌ |
-| tipoContribuinte | `TipoContribuinteNfeEnum` | ❌ |
-| regimeTributario | `RegimeTributarioEnum` | ❌ |
-| nascimento | datetime | ❌ |
-| inscricaoEstadual | string | ❌ |
-| inscricaoMunicipal | string | ❌ |
-
----
-
-### `ProdutoRequestDto`
-| Field | Type | Required |
-|-------|------|----------|
-| grupoProdutoId | int32 | ✅ |
-| unidadeId | int32 | ✅ |
-| descricao | string | ✅ |
-| codigo | string | ❌ |
-| codigoBarras | string | ❌ |
-| ncmId | int32 | ❌ |
-| precoVenda | decimal | ❌ |
-| precoCusto | decimal | ❌ |
-| estocavel | bool | ❌ |
-| ativo | bool | ❌ |
-| observacao | string | ❌ |
-
----
-
-### `PedidoRequestDto`
-| Field | Type | Required |
-|-------|------|----------|
-| tipoPedidoId | int32 | ✅ |
-| clienteId | int32 | ✅ |
-| operacaoFiscalId | int32 | ✅ |
-| dataEmissao | datetime | ✅ |
-| dataPrevisaoEntrega | datetime | ❌ |
-| condicaoPagamentoId | int32 | ❌ |
-| vendedorId | int32 | ❌ |
-| transportadorId | int32 | ❌ |
-| observacao | string | ❌ |
-| itens | `PedidoItemRequestDto[]` | ✅ |
-
----
-
-### `PedidoItemRequestDto`
-| Field | Type | Required |
-|-------|------|----------|
-| produtoId | int32 | ✅ |
-| quantidade | decimal | ✅ |
-| precoUnitario | decimal | ✅ |
-| desconto | decimal | ❌ |
-| observacao | string | ❌ |
-
----
-
-### `OrdemCompraRequestDto`
-| Field | Type | Required |
-|-------|------|----------|
-| fornecedorId | int32 | ✅ |
-| dataEmissao | datetime | ✅ |
-| dataPrevisaoEntrega | datetime | ❌ |
-| condicaoPagamentoId | int32 | ❌ |
-| observacao | string | ❌ |
-| itens | `OrdemCompraItemRequestDto[]` | ✅ |
-
----
-
-### `ContaPagarRequestDto` / `ContaReceberRequestDto`
-| Field | Type | Required |
-|-------|------|----------|
-| pessoaId | int32 | ✅ |
-| planoContaId | int32 | ✅ |
-| dataEmissao | datetime | ✅ |
-| dataVencimento | datetime | ✅ |
-| valor | decimal | ✅ |
-| historico | string | ❌ |
-| numeroParcelas | int32 | ❌ |
-| meiopagamentoId | int32 | ❌ |
-
----
-
-### `EstoqueMovimentacaoRequestDto`
-| Field | Type | Required |
-|-------|------|----------|
-| produtoId | int32 | ✅ |
-| localEstoqueId | int32 | ✅ |
-| tipoMovimentacao | `TipoMovimentacaoEstoqueEnum` | ✅ |
-| quantidade | decimal | ✅ |
-| dataMovimentacao | datetime | ✅ |
-| observacao | string | ❌ |
-
----
-
-### `EnderecoRequestDto`
-| Field | Type | Required |
-|-------|------|----------|
-| cep | string | ✅ |
-| logradouro | string | ✅ |
-| numero | string | ✅ |
-| bairroId | int32 | ❌ |
-| bairroNome | string | ❌ |
-| municipioId | int32 | ❌ |
-| municipioNome | string | ❌ |
-| uf | string | ❌ |
-| complemento | string | ❌ |
-| principal | bool | ❌ |
-
----
-
-### `ContatoRequestDto`
-| Field | Type | Required |
-|-------|------|----------|
-| nome | string | ✅ |
-| email | string | ❌ |
-| telefone | string | ❌ |
-| celular | string | ❌ |
-| cargo | string | ❌ |
-
----
-
-## Key Enums
-
-| Enum | Values |
-|------|--------|
-| `TipoContribuinteNfeEnum` | `ContribuinteIcms`, `ContribuinteIsento`, `NaoContribuinte` |
-| `RegimeTributarioEnum` | `SimplesNacional`, `SimplesNacionalExcesso`, `RegimeNormal` |
-| `OperacaoConsumidorNfeEnum` | `Normal`, `ConsumidorFinal` |
-| `TipoMovimentacaoEstoqueEnum` | `Entrada`, `Saida` |
-| `BoleanoEnum` | `Nao`, `Sim` |
-| `CombustivelEnum` | `Gasolina`, `Alcool`, `Diesel`, `GNV`, `Eletrico`, `Hibrido` |
-| `SituacaoNfeEnum` | `Pendente`, `Autorizada`, `Cancelada`, `Denegada`, `Inutilizada` |
-| `TipoFreteCteEnum` | `CIF`, `FOB`, `Terceiros`, `SemFrete` |
-| `ModalidadeFreteNfeEnum` | `ContratacaoRemetente`, `ContratacaoDestinatario`, `ContratacaoTerceiros`, `SemOcorrencia` |
-| `AtivoEcommerceEnum` | `NaoApresentaPortal`, `ApresentaPortalUsuarioInterno`, `ApresentaPortalTodos`, ... |
+**`POST` Cadastrar — body fields:** `nome`, `peso`, `observacao`
 
 ---
 
 ## Common Patterns
 
-### Listing with filters
 ```
+# List with filters
 GET /v1/{resource}?Page=1&PageSize=50&<FilterField>=<value>
-```
 
-### Get by ID
-```
+# Get by ID
 GET /v1/{resource}/{id}
-```
 
-### Create
-```
+# Create
 POST /v1/{resource}
-Content-Type: application/json
 Authorization: Bearer <token>
-Body: <RequestDto>
-```
+Content-Type: application/json
 
-### Update
-```
+# Update (full)
 PUT /v1/{resource}/{id}
-Content-Type: application/json
-Authorization: Bearer <token>
-Body: <RequestDto>
-```
 
-### Sub-resources
-```
+# Update (partial)
+PATCH /v1/{resource}/{id}
+
+# Sub-resources
 GET  /v1/{resource}/{parentId}/{subresource}
 POST /v1/{resource}/{parentId}/{subresource}
-```
 
-### Actions (non-CRUD)
-```
+# Actions
 POST /v1/{resource}/{id}/cancelar
 POST /v1/{resource}/{id}/faturar
-POST /v1/{resource}/{id}/baixa
-POST /v1/{resource}/{id}/finalizar
+PATCH /v1/{resource}/{id}/statusfluxo
 ```
