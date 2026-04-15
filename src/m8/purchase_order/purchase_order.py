@@ -50,7 +50,7 @@ class PurchaseOrder:
     observacao: str | None = None
     tipoOC: str | None = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self, full: bool = False) -> dict:
         ret = {
             "empresaId": self.empresaId,
             "status": self.status,
@@ -69,5 +69,9 @@ class PurchaseOrder:
             ret["observacao"] = self.observacao
         if self.tipoOC is not None:
             ret["tipoOC"] = self.tipoOC
+
+        if full:
+            ret["items"] = [item.to_dict() for item in self.items]
+            ret["installments"] = [inst.to_dict() for inst in self.installments]
 
         return ret

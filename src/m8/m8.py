@@ -67,6 +67,16 @@ class M8:
             "endpoint": "v1/estoque/servicoleicomplementar",
             "methods": {},
         },
+        "invoice_products": {
+            "endpoint": "v1/faturamento/notafiscalvenda",
+            "methods": {
+                "listar_produtos": "produto",
+            }
+        },
+        "products": {
+            "endpoint": "v1/estoque/produto",
+            "methods": {},
+        },
         "clients": {
             "endpoint": "v1/configuracoes/cliente",
             "methods": {
@@ -209,43 +219,21 @@ class M8:
             raise BadRequestException(resp.json()["errors"][0]["message"])
 
     @auth
-    def get_invoices(self,
-                     id: int | None = None,
-                     pessoa_id: int | None = None,
-                     pessoa_nome: str | None = None,
-                     pessoa_cnpj: str | None = None,
-                     documento: str | None = None,
-                     chave_nfe: str | None = None,
-                     status: str | None = None,
-                     emissao_inicial: str | None = None,
-                     emissao_final: str | None = None,
-                     usuario_id: int | None = None,
-                     page: int | None = None,
-                     page_size: int | None = None) -> list:
+    def get_invoices(self, search_params: dict) -> list:
         url = self._base_url + "/" + M8.endpoints["invoices"]["endpoint"]
-
-        search_params = {
-            k: v for k, v in {
-                "Id": id,
-                "PessoaId": pessoa_id,
-                "PessoaNome": pessoa_nome,
-                "PessoaCnpj": pessoa_cnpj,
-                "Documento": documento,
-                "ChaveNfe": chave_nfe,
-                "Status": status,
-                "EmissaoInicial": emissao_inicial,
-                "EmissaoFinal": emissao_final,
-                "UsuarioId": usuario_id,
-                "Page": page,
-                "PageSize": page_size,
-            }.items() if v is not None
-        }
-
         return self._request_get_with_query_params(url=url,
                                                    search_params=search_params)
 
-    def get_unsent_invoices(self) -> list:
-        return self.get_invoices(status="Pendente")
+    def get_unsent_invoices(self, page_size: int = 50) -> list:
+        all_invoices = []
+        page = 1
+        while True:
+            batch = self.get_invoices({"Status": "Pendente", "Page": page, "PageSize": page_size})
+            all_invoices.extend(batch)
+            if len(batch) < page_size:
+                break
+            page += 1
+        return all_invoices
 
     @auth
     def update_invoice(self, invoice_id: int, context: dict | None = None) -> None:
@@ -456,6 +444,24 @@ class M8:
                         str(client_id),
                         M8.endpoints["clients"]["methods"]["endereco"]])
         return self._request_get_with_query_params(url=url, search_params={})
+
+    @auth
+    def get_invoice_products(self, invoice_id: int) -> list:
+        url = "/".join([self._base_url,
+                        M8.endpoints["invoice_products"]["endpoint"],
+                        str(invoice_id),
+                        M8.endpoints["invoice_products"]["methods"]["listar_produtos"]])
+        return self._request_get_with_query_params(url=url, search_params={})
+
+    @auth
+    def get_product(self, product_id: int) -> dict:
+        url = "/".join([self._base_url,
+                        M8.endpoints["products"]["endpoint"],
+                        str(product_id)])
+        resp = requests.get(url, headers=self._headers)
+        if resp.status_code > 299:
+            raise BadRequestException(resp.json()["errors"][0]["message"])
+        return resp.json()["data"]
 
     @auth
     def get_client_contacts(self, client_id: int) -> list:
