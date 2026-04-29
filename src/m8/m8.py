@@ -84,6 +84,12 @@ class M8:
                 "contato": "contato",
             }
         },
+        "suppliers": {
+            "endpoint": "v1/configuracoes/fornecedor",
+            "methods": {
+                "endereco": "endereco",
+            }
+        },
     }
 
     ESTABS = {
@@ -470,6 +476,38 @@ class M8:
                         str(client_id),
                         M8.endpoints["clients"]["methods"]["contato"]])
         return self._request_get_with_query_params(url=url, search_params={})
+
+    @auth
+    def get_suppliers(self, search_params: dict) -> list:
+        url = self._base_url + "/" + M8.endpoints["suppliers"]["endpoint"]
+        return self._request_get_with_query_params(url=url, search_params=search_params)
+
+    @auth
+    def get_supplier(self, supplier_id: int) -> dict:
+        url = "/".join([self._base_url,
+                        M8.endpoints["suppliers"]["endpoint"],
+                        str(supplier_id)])
+        resp = requests.get(url, headers=self._headers)
+        if resp.status_code > 299:
+            raise BadRequestException(resp.json()["errors"][0]["message"])
+        return resp.json()["data"]
+
+    @auth
+    def get_supplier_addresses(self, supplier_id: int) -> list:
+        url = "/".join([self._base_url,
+                        M8.endpoints["suppliers"]["endpoint"],
+                        str(supplier_id),
+                        M8.endpoints["suppliers"]["methods"]["endereco"]])
+        return self._request_get_with_query_params(url=url, search_params={})
+
+    @auth
+    def create_supplier(self, data: dict) -> int:
+        url = self._base_url + "/" + M8.endpoints["suppliers"]["endpoint"]
+        resp = requests.post(url, json=data, headers=self._headers)
+        if resp.status_code > 299:
+            logger.error("Error in create_supplier(). Status code: %s", resp.status_code)
+            raise BadRequestException(resp.json()["errors"][0]["message"])
+        return resp.json()["data"]["id"]
 
 
 def load_credentials_from_file(filename: str) -> tuple[str, str]:
