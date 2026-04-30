@@ -361,6 +361,15 @@ class M8:
         return resp.json()["data"]["id"]
 
     @auth
+    def get_purchase_order_installments(self, po_id: int) -> list:
+        url = "/".join([self._base_url,
+                        M8.endpoints["purchase_orders"]["endpoint"],
+                        str(po_id),
+                        M8.endpoints["purchase_orders"]["methods"]["cadastrar_parcela"]
+                        ])
+        return self._request_get_with_query_params(url=url, search_params={})
+
+    @auth
     def create_purchase_order_installment(self, po_id: int, installment: PurchaseOrderInstallment) -> int:
         url = "/".join([self._base_url,
                         M8.endpoints["purchase_orders"]["endpoint"],
@@ -481,6 +490,19 @@ class M8:
     def get_suppliers(self, search_params: dict) -> list:
         url = self._base_url + "/" + M8.endpoints["suppliers"]["endpoint"]
         return self._request_get_with_query_params(url=url, search_params=search_params)
+
+    def get_all_suppliers(self, search_params: dict | None = None, page_size: int = 50) -> list:
+        if search_params is None:
+            search_params = {}
+        all_suppliers = []
+        page = 1
+        while True:
+            batch = self.get_suppliers({**search_params, "Page": page, "PageSize": page_size})
+            all_suppliers.extend(batch)
+            if len(batch) < page_size:
+                break
+            page += 1
+        return all_suppliers
 
     @auth
     def get_supplier(self, supplier_id: int) -> dict:
